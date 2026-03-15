@@ -10,6 +10,11 @@ module gen_sprued_keycaps(keycap_ids, spacing=18, spru_radius=0.8, vertical=fals
 available_keycaps = [
     // keycap_id, variation, keyID, width, rot, stemRot, mirror, homing dots, homing bar
 
+    // R1 - Steeper top row for boards with 4+ finger rows (e.g. Go60)
+    // Uses keyID 17 (variation 1) / keyID 13 (variation 3)
+    // Height: 5.5mm, XSkew: 7 degrees
+    ["cs_r1_1",             1, 17, 1.00, 180,  0, false, false, false],
+
     // Top and bottom rows (R2 / R4)
     // R2 and R4 are the exact same keycap. You just rotate them by
     // 180 degrees.
@@ -38,6 +43,9 @@ available_keycaps = [
     ["cs_r3_225",           1, 14, 2.25,   0,  0, false, false, false],
 
     // Lateral Columns
+    ["cs_r1_lateral_l",     3, 13, 1.00, 180,  0, true,  false, false],
+    ["cs_r1_lateral_r",     3, 13, 1.00, 180,  0, false, false, false],
+
     ["cs_r2_lateral_l",     3,  0, 1.00, 180,  0, true,  false, false],
     ["cs_r2_lateral_r",     3,  0, 1.00, 180,  0, false, false, false],
     ["cs_r4_lateral_l",     3,  0, 1.00,   0,  0, false, false, false],
