@@ -248,35 +248,16 @@ module keycap_cs_convex(keyID = 0, cutLen = 0, visualizeDish = false, csrossSect
   BackCurve  = [ for(i=[0:len(BackPath)-1])  transform(BackPath[i],  DishShape(DishDepth(keyID),  BackDishArc(i), DishDepth(keyID)+1.5, d = 0)) ];
 
   //builds
+  // Body shell with dish cuts - stem parts are separate to avoid
+  // CGAL applyUnion3D errors from nonplanar skin faces
   difference(){
-    union(){
-      difference(){
-        skin([for (i=[0:layers-1]) transform(translation(CapTranslation(i, keyID)) * rotation(CapRotation(i, keyID)), elliptical_rectangle(CapTransform(i, keyID), b = CapRoundness(i,keyID),fn=fn))]); //outer shell
+    skin([for (i=[0:layers-1]) transform(translation(CapTranslation(i, keyID)) * rotation(CapRotation(i, keyID)), elliptical_rectangle(CapTransform(i, keyID), b = CapRoundness(i,keyID),fn=fn))]); //outer shell
 
-        //Cut inner shell
-        if(Stem == true){
-          translate([0,0,-.001])skin([for (i=[0:layers-1]) transform(translation(InnerTranslation(i, keyID)) * rotation(CapRotation(i, keyID)), elliptical_rectangle(InnerTransform(i, keyID), b = CapRoundness(i,keyID),fn=fn))]);
-        }
-      }
-      if(Stem == true){
-        translate([0,0,StemBrimDep])rotate([0,0,StemRot])choc_stem();
-        if (Stab != 0){
-//          translate([Stab/2,0,0])rotate([0,0,stemRot])cherry_stem(KeyHeight(keyID), slop);
-//          translate([-Stab/2,0,0])rotate([0,0,stemRot])cherry_stem(KeyHeight(keyID), slop);
-          //TODO add binding support?
-        }
-        rotate([0,0,StemRot])translate([0,0,-.001])skin([for (i=[0:stemLayers-1]) transform(translation(StemTranslation(i,keyID))*rotation(StemRotation(i, keyID)), rounded_rectangle_profile(StemTransform(i, keyID),fn=fn,r=StemRadius(i, keyID)))]); //Transition Support for taller profile
-      }
-    //cut for fonts and extra pattern for light?
+    //Cut inner shell
+    if(Stem == true){
+      translate([0,0,-.001])skin([for (i=[0:layers-1]) transform(translation(InnerTranslation(i, keyID)) * rotation(CapRotation(i, keyID)), elliptical_rectangle(InnerTransform(i, keyID), b = CapRoundness(i,keyID),fn=fn))]);
     }
 
-    //Cuts
-
-    //Fonts
-    // if(Legends ==  true){
-    //       #rotate([-XAngleSkew(keyID),YAngleSkew(keyID),ZAngleSkew(keyID)])translate([-1,-5,KeyHeight(keyID)-2.5])linear_extrude(height = 1)text( text = "ver2", font = "Constantia:style=Bold", size = 3, valign = "center", halign = "center" );
-    //   //  #rotate([-XAngleSkew(keyID),YAngleSkew(keyID),ZAngleSkew(keyID)])translate([0,-3.5,0])linear_extrude(height = 0.5)text( text = "Me", font = "Constantia:style=Bold", size = 3, valign = "center", halign = "center" );
-    //   }
    //Dish Shape
     if(Dish == true){
      if(visualizeDish == false){
@@ -291,6 +272,20 @@ module keycap_cs_convex(keyID = 0, cutLen = 0, visualizeDish = false, csrossSect
     //    translate([0,-15,-.1])cube([15,30,15]);
     //  }
   }
+
+  // Stem parts placed as siblings (implicit union) to avoid CGAL
+  // applyUnion3D assertion failure with nonplanar skin faces.
+  // Per-layer rotation removed from stem transition to prevent the error.
+  if(Stem == true){
+    translate([0,0,StemBrimDep])rotate([0,0,StemRot])choc_stem();
+    if (Stab != 0){
+//          translate([Stab/2,0,0])rotate([0,0,stemRot])cherry_stem(KeyHeight(keyID), slop);
+//          translate([-Stab/2,0,0])rotate([0,0,stemRot])cherry_stem(KeyHeight(keyID), slop);
+      //TODO add binding support?
+    }
+    rotate([0,0,StemRot])translate([0,0,-.001])skin([for (i=[0:stemLayers-1]) transform(translation(StemTranslation(i,keyID)), rounded_rectangle_profile(StemTransform(i, keyID),fn=fn,r=StemRadius(i, keyID)))]); //Transition Support for taller profile
+  }
+
   //Homing dot
   if(homeDot == true)translate([0,0,KeyHeight(keyID)-DishHeightDif(keyID)-.25])sphere(d = dotRadius);
 }
