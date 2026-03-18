@@ -272,14 +272,25 @@ module keycap_cs(keyID = 0, cutLen = 0, visualizeDish = false, crossSection = fa
   BackCurve  = [ for(i=[0:len(BackPath)-1])  transform(BackPath[i],  DishShape(DishDepth(keyID),  BackDishArc(i), 1, d = 0)) ];
 
   //builds
-  // Body shell with dish cuts - stem parts are separate to avoid
-  // CGAL applyUnion3D errors from nonplanar skin faces
   difference(){
-    skin([for (i=[0:layers-1]) transform(translation(CapTranslation(i, keyID)) * rotation(CapRotation(i, keyID)), elliptical_rectangle(CapTransform(i, keyID), b = CapRoundness(i,keyID),fn=fn))]); //outer shell
+    union(){
+      difference(){
+        skin([for (i=[0:layers-1]) transform(translation(CapTranslation(i, keyID)) * rotation(CapRotation(i, keyID)), elliptical_rectangle(CapTransform(i, keyID), b = CapRoundness(i,keyID),fn=fn))]); //outer shell
 
-    //Cut inner shell
-    if(Stem == true){
-      translate([0,0,-.001])skin([for (i=[0:layers-1]) transform(translation(InnerTranslation(i, keyID)) * rotation(CapRotation(i, keyID)), elliptical_rectangle(InnerTransform(i, keyID), b = CapRoundness(i,keyID),fn=fn))]);
+        //Cut inner shell
+        if(Stem == true){
+          translate([0,0,-.001])skin([for (i=[0:layers-1]) transform(translation(InnerTranslation(i, keyID)) * rotation(CapRotation(i, keyID)), elliptical_rectangle(InnerTransform(i, keyID), b = CapRoundness(i,keyID),fn=fn))]);
+        }
+      }
+      if(Stem == true){
+        rotate([0,0,StemRot]){
+          choc_stem(draftAng = draftAngle);
+          if (Stab != 0){
+            // no need for stab
+          }
+          translate([0,0,-.001])skin([for (i=[0:stemLayers-1]) transform(translation(StemTranslation(i,keyID))*rotation(StemRotation(i, keyID)), rounded_rectangle_profile(StemTransform(i, keyID),fn=fn,r=StemRadius(i, keyID)))]); //outer shell
+        }
+      }
     }
 
     //Cuts
@@ -304,19 +315,6 @@ module keycap_cs(keyID = 0, cutLen = 0, visualizeDish = false, crossSection = fa
      if(crossSection == true) {
        translate([0,-25,-.1])cube([15,50,15]);
      }
-  }
-
-  // Stem parts placed as siblings (implicit union) to avoid CGAL
-  // applyUnion3D assertion failure with nonplanar skin faces.
-  // Per-layer rotation removed from stem transition to prevent the error.
-  if(Stem == true){
-    rotate([0,0,StemRot]){
-      choc_stem(draftAng = draftAngle);
-      if (Stab != 0){
-        // no need for stab
-      }
-      translate([0,0,-.001])skin([for (i=[0:stemLayers-1]) transform(translation(StemTranslation(i,keyID)), rounded_rectangle_profile(StemTransform(i, keyID),fn=fn,r=StemRadius(i, keyID)))]); //outer shell
-    }
   }
 
   if(homeDot == true){
