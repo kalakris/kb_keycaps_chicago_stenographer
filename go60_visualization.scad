@@ -67,17 +67,29 @@ module go60_left_half() {
         }
     }
 
-    // Thumb row (estimated arc below finger keys)
+    // Thumb row – starts at column 2 (C4, ring finger column).
+    // First 3 keys are straight-aligned, then progressive splay
+    // of ~12.5° per key for the remaining 3.
     thumb_base_y = -1.5 * row_spacing - 22;
-    thumb_arc     = [0, 2, 4, 5, 3, 0];  // slight upward arc in the middle
+    thumb_col_start = 2;          // first thumb key aligns with C4
+    thumb_splay     = -12.5;      // degrees per splayed key (toward palm)
 
     for (i = [0:5]) {
+        splay_index = i < 3 ? 0 : i - 2;  // 0,0,0,1,2,3
+        rot = splay_index * thumb_splay;
+
+        // Pivot the splayed keys around the edge of the last straight key
+        pivot_x = (thumb_col_start + 2) * col_spacing;
+        pivot_y = thumb_base_y;
+
+        translate([pivot_x, pivot_y, 0])
+        rotate([0, 0, rot])
+        translate([-pivot_x, -pivot_y, 0])
         translate([
-            i * col_spacing,
-            thumb_base_y + thumb_arc[i],
+            (thumb_col_start + i) * col_spacing,
+            thumb_base_y,
             0
         ])
-        rotate([0, 0, -8])
         cs_keycap(left_thumb_keys[i]);
     }
 }
