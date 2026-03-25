@@ -390,7 +390,7 @@ module keycap_cs_thumb(keyID = 0, cutLen = 0, visualizeDish = false, crossSectio
         stemLayerAddition = (
           keyID == 2 // 1u Thumb key
             ? 20
-          : keyID == 3 || keyId == 4 // 1.5u and 2u Thumb key
+          : keyID == 3 || keyID == 4 // 1.5u and 2u Thumb key
             ? 8
           : // else
             0
