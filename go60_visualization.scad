@@ -67,19 +67,21 @@ module go60_left_half() {
         }
     }
 
-    // Thumb row – starts at column 2 (C4, ring finger column).
-    // First 3 keys are straight-aligned, then progressive splay
-    // of ~12.5° per key for the remaining 3.
-    thumb_base_y = -1.5 * row_spacing - 22;
-    thumb_col_start = 2;          // first thumb key aligns with C4
-    thumb_splay     = -12.5;      // degrees per splayed key (toward palm)
+    // Thumb row – modeled after MoErgo Go60 layout.
+    // First 3 keys (left-most on left half) align straight with
+    // finger columns C4, C3, C2. The remaining 3 keys fan inward
+    // with ~10° progressive splay per key, pivoting at the boundary
+    // of the straight and splayed sections.
+    thumb_base_y    = -1.5 * row_spacing - 18;  // gap below R4
+    thumb_col_start = 2;           // first thumb key aligns with C4
+    thumb_splay     = -10;         // degrees per splayed key
 
     for (i = [0:5]) {
-        splay_index = i < 3 ? 0 : i - 2;  // 0,0,0,1,2,3
-        rot = splay_index * thumb_splay;
+        splay_steps = i < 3 ? 0 : i - 2;   // 0,0,0,1,2,3
+        rot = splay_steps * thumb_splay;
 
-        // Pivot the splayed keys around the edge of the last straight key
-        pivot_x = (thumb_col_start + 2) * col_spacing;
+        // Pivot at the right edge of the last straight key (index 2)
+        pivot_x = (thumb_col_start + 3) * col_spacing - col_spacing/2;
         pivot_y = thumb_base_y;
 
         translate([pivot_x, pivot_y, 0])
