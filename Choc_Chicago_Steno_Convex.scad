@@ -154,9 +154,9 @@ function ellipse(a, b, d = 0, rot1 = 0, rot2 = 360) = [for (t = [rot1:step:rot2]
 
 function DishShape (a,b,c,d) =
   concat(
-   [[c+a,-b]],
-    ellipse(a, b, d = 0,rot1 = 270, rot2 =450),
-   [[c+a,b]]
+//   [[c+a,-b]],
+    ellipse(a, b, d = 0,rot1 = 270, rot2 =450)
+//   [[c+a,b]]
   );
 
 function oval_path(theta, phi, a, b, c, deform = 0) = [
@@ -246,6 +246,17 @@ module keycap_cs_convex(keyID = 0, cutLen = 0, visualizeDish = false, csrossSect
 
   FrontCurve = [ for(i=[0:len(FrontPath)-1]) transform(FrontPath[i], DishShape(DishDepth(keyID), FrontDishArc(i), DishDepth(keyID)+1.5, d = 0)) ];
   BackCurve  = [ for(i=[0:len(BackPath)-1])  transform(BackPath[i],  DishShape(DishDepth(keyID),  BackDishArc(i), DishDepth(keyID)+1.5, d = 0)) ];
+  // Combined dish curve: pre-apply different rotations to each half, then combine into one skin (no seam)
+  DishT     = translation([-TopWidShift(keyID),-TopLenShift(keyID),KeyHeight(keyID)-DishHeightDif(keyID)]);
+  DishRy    = rotation([0,-YAngleSkew(keyID),0]);
+  DishRfront = rotation([0,-90+XAngleSkew(keyID),90-ZAngleSkew(keyID)]);
+  DishRback  = rotation([0,-90-XAngleSkew(keyID),270-ZAngleSkew(keyID)]);
+  DishMfront = DishT * DishRy * DishRfront;
+  DishMback  = DishT * DishRy * DishRback;
+  DishCurve = concat(
+    [ for(i=[len(BackPath)-1:-1:1]) transform(DishMback, transform(BackPath[i], DishShape(DishDepth(keyID), BackDishArc(i), DishDepth(keyID)+1.5, d = 0))) ],
+    [ for(i=[0:len(FrontPath)-1])   transform(DishMfront, transform(FrontPath[i], DishShape(DishDepth(keyID), FrontDishArc(i), DishDepth(keyID)+1.5, d = 0))) ]
+  );
 
   //builds
   difference(){
@@ -280,11 +291,9 @@ module keycap_cs_convex(keyID = 0, cutLen = 0, visualizeDish = false, csrossSect
    //Dish Shape
     if(Dish == true){
      if(visualizeDish == false){
-      translate([-TopWidShift(keyID),.00001-TopLenShift(keyID),KeyHeight(keyID)-DishHeightDif(keyID)])rotate([0,-YAngleSkew(keyID),0])rotate([0,-90+XAngleSkew(keyID),90-ZAngleSkew(keyID)])skin(FrontCurve);
-      translate([-TopWidShift(keyID),-TopLenShift(keyID),KeyHeight(keyID)-DishHeightDif(keyID)])rotate([0,-YAngleSkew(keyID),0])rotate([0,-90-XAngleSkew(keyID),270-ZAngleSkew(keyID)])skin(BackCurve);
+      skin(DishCurve);
      } else {
-      #translate([-TopWidShift(keyID),.00001-TopLenShift(keyID),KeyHeight(keyID)-DishHeightDif(keyID)]) rotate([0,-YAngleSkew(keyID),0])rotate([0,-90+XAngleSkew(keyID),90-ZAngleSkew(keyID)])skin(FrontCurve);
-      #translate([-TopWidShift(keyID),-TopLenShift(keyID),KeyHeight(keyID)-DishHeightDif(keyID)])rotate([0,-YAngleSkew(keyID),0])rotate([0,-90-XAngleSkew(keyID),270-ZAngleSkew(keyID)])skin(BackCurve);
+      #skin(DishCurve);
      }
    }
     //  if(crossSection == true) {

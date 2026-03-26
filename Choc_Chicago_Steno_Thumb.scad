@@ -352,6 +352,11 @@ module keycap_cs_thumb(keyID = 0, cutLen = 0, visualizeDish = false, crossSectio
     , r = FTanRadius(i, keyID))) ];
   BackCurve  = [ for(i=[0:len(BackPath)-1])  transform(BackPath[i],  DishShape2(DishDepth(keyID), BackDishArc(i), phi = TransitionAngleInit(keyID), theta= 60
     , r = BTanRadius(i, keyID))) ];
+  // Combined dish curve: sweep from back edge through center to front edge (single skin, no seam)
+  DishCurve = concat(
+    [ for(i=[len(BackPath)-1:-1:1]) transform(BackPath[i], DishShape2(DishDepth(keyID), BackDishArc(i), phi = TransitionAngleInit(keyID), theta= 60, r = BTanRadius(i, keyID))) ],
+    [ for(i=[0:len(FrontPath)-1])   transform(FrontPath[i], DishShape2(a= DishDepth(keyID), b= FrontDishArc(i), phi = TransitionAngleInit(keyID), theta= 60, r = FTanRadius(i, keyID))) ]
+  );
 //  for(i=[0:len(FrontPath)-1])echo ( len(transform(FrontPath[i], DishShape2( a= DishDepth(keyID), b= FrontDishArc(i), phi = TransitionAngleInit(keyID), theta= 60
 //    , r = FTanRadius(i, keyID)))), TanTransition(i, keyID));
 
@@ -428,8 +433,7 @@ module keycap_cs_thumb(keyID = 0, cutLen = 0, visualizeDish = false, crossSectio
       }
    //Dish Shape
     if(Dish == true){
-      translate([-TopWidShift(keyID),.0001-TopLenShift(keyID),KeyHeight(keyID)-DishHeightDif(keyID)])rotate([0,-YAngleSkew(keyID),0])rotate([0,-90+XAngleSkew(keyID),90-ZAngleSkew(keyID)])skin(FrontCurve);
-      translate([-TopWidShift(keyID),-TopLenShift(keyID),KeyHeight(keyID)-DishHeightDif(keyID)])rotate([0,-YAngleSkew(keyID),0])rotate([0,-90+XAngleSkew(keyID),90-ZAngleSkew(keyID)])skin(BackCurve);
+      translate([-TopWidShift(keyID),-TopLenShift(keyID),KeyHeight(keyID)-DishHeightDif(keyID)])rotate([0,-YAngleSkew(keyID),0])rotate([0,-90+XAngleSkew(keyID),90-ZAngleSkew(keyID)])skin(DishCurve);
 
 
      if(SecondaryDish == true){

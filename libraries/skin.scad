@@ -26,8 +26,9 @@ module skin(profiles, loop=false /* unimplemented */) {
 				t
 	];
 	
-	start_cap = [range([0:P-1])];
-	end_cap   = [range([P*N-1 : -1 : P*(N-1)])];
+	// Fan-triangulate caps to avoid nonplanar faces that break Manifold backend
+	start_cap = [for (i=[1:P-2]) [0, i, i+1]];
+	end_cap   = [for (i=[1:P-2]) [P*N-1, P*(N-1)+((P-1)-i), P*(N-1)+((P-1)-(i+1))]];
 
 	polyhedron(convexity=2, points=profiles, faces=concat(start_cap, triangles, end_cap));
 }

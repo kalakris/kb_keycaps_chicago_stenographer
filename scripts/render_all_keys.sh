@@ -4,12 +4,18 @@
 #
 # Each key is rendered by passing keycap_id to gen_single_keycap.scad.
 # Results are placed in stl/single_keys/ by default.
+#
+# Uses Manifold backend (fast) for most keys, CGAL backend for convex
+# keys (cs_r*x_*) where the dish geometry requires it.
 
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
 OUTPUT_DIR="${1:-stl/single_keys}"
 mkdir -p "$OUTPUT_DIR"
+
+# All keys now use Manifold backend
+CGAL_KEYS=""
 
 KEYS=(
   cs_r1_1
@@ -64,9 +70,14 @@ FAILED_KEYS=()
 
 for key in "${KEYS[@]}"; do
   DONE=$((DONE + 1))
-  echo "[$DONE/$TOTAL] Rendering $key..."
-  if openscad -o "${OUTPUT_DIR}/${key}.stl" -D "keycap_id=\"${key}\"" gen_single_keycap.scad 2>&1; then
-    SIZE=$(stat -c%s "${OUTPUT_DIR}/${key}.stl" 2>/dev/null || echo 0)
+  # Use CGAL for convex keys, Manifold for everything else
+  BACKEND="Manifold"
+  if echo "$CGAL_KEYS" | grep -qw "$key"; then
+    BACKEND="CGAL"
+  fi
+  echo "[$DONE/$TOTAL] Rendering $key ($BACKEND)..."
+  if openscad --backend="$BACKEND" -o "${OUTPUT_DIR}/${key}.stl" -D "keycap_id=\"${key}\"" gen_single_keycap.scad 2>&1; then
+    SIZE=$(stat -f%z "${OUTPUT_DIR}/${key}.stl" 2>/dev/null || stat -c%s "${OUTPUT_DIR}/${key}.stl" 2>/dev/null || echo 0)
     echo "  OK: ${key}.stl (${SIZE} bytes)"
   else
     echo "  FAILED: $key"
