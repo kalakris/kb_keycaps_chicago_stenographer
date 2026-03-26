@@ -313,16 +313,18 @@ function StemRotation(t, keyID) =
 // Swap width and length of little rectangular platform below the stem
 // if the stem is rotated
 function StemTransform(t, keyID, StemRot) =
+  // Clamp t/stemLayers to 1.0 so profile never exceeds body size when stemLayerAddition extends the range
+  let(s = min(t/stemLayers, 1))
   StemRot == 0
   ? // stemRot is 0
     [
-      pow(t/stemLayers, StemExponent(keyID))*(BottomWidth(keyID) -TopLenDiff(keyID)-wallthickness*2) + (1-pow(t/stemLayers, StemExponent(keyID)))*(stemWid - 2*slop),
-      pow(t/stemLayers, StemExponent(keyID))*(BottomLength(keyID)-TopLenDiff(keyID)-wallthickness*2) + (1-pow(t/stemLayers, StemExponent(keyID)))*(stemLen - 2*slop)
+      pow(s, StemExponent(keyID))*(BottomWidth(keyID) -TopLenDiff(keyID)-wallthickness*2) + (1-pow(s, StemExponent(keyID)))*(stemWid - 2*slop),
+      pow(s, StemExponent(keyID))*(BottomLength(keyID)-TopLenDiff(keyID)-wallthickness*2) + (1-pow(s, StemExponent(keyID)))*(stemLen - 2*slop)
     ]
   : // else swap stemWid and stemLen
     [
-      pow(t/stemLayers, StemExponent(keyID))*(BottomWidth(keyID) -TopLenDiff(keyID)-wallthickness*2) + (1-pow(t/stemLayers, StemExponent(keyID)))*(stemLen - 2*slop),
-      pow(t/stemLayers, StemExponent(keyID))*(BottomLength(keyID)-TopLenDiff(keyID)-wallthickness*2) + (1-pow(t/stemLayers, StemExponent(keyID)))*(stemWid - 2*slop)
+      pow(s, StemExponent(keyID))*(BottomWidth(keyID) -TopLenDiff(keyID)-wallthickness*2) + (1-pow(s, StemExponent(keyID)))*(stemLen - 2*slop),
+      pow(s, StemExponent(keyID))*(BottomLength(keyID)-TopLenDiff(keyID)-wallthickness*2) + (1-pow(s, StemExponent(keyID)))*(stemWid - 2*slop)
     ]
   ;
 

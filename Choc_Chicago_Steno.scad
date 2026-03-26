@@ -293,7 +293,9 @@ module keycap_cs(keyID = 0, cutLen = 0, visualizeDish = false, crossSection = fa
           if (Stab != 0){
             // no need for stab
           }
-          translate([0,0,-.001])skin([for (i=[0:stemLayers-1]) transform(translation(StemTranslation(i,keyID))*rotation(StemRotation(i, keyID)), rounded_rectangle_profile(StemTransform(i, keyID),fn=fn,r=StemRadius(i, keyID)))]); //outer shell
+          // Only render stem transition if it has positive height range (avoids degenerate flat geometry)
+          if (KeyHeight(keyID) - topthickness - stemCrossHeight - 0.1 > 0.01)
+            translate([0,0,-.001])skin([for (i=[0:stemLayers-1]) transform(translation(StemTranslation(i,keyID))*rotation(StemRotation(i, keyID)), rounded_rectangle_profile(StemTransform(i, keyID),fn=fn,r=StemRadius(i, keyID)))]); //outer shell
         }
       }
     }
