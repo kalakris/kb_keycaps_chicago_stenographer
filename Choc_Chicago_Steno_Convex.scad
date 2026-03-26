@@ -8,6 +8,18 @@ use <skin.scad>
 //use <z-butt.scad>
 
 //NOTE: with sweep cuts, top surface may not be visible in review, it should be visible once rendered
+//
+// RENDERING: Must use CGAL backend (--backend=CGAL). The Manifold backend
+// cannot handle the two-sweep dish boolean — it produces high genus meshes
+// with visible artifacts and incorrect dish geometry.
+//
+// The convex dish uses two separate skin() sweeps (front + back) with
+// different rotations. This is inherently problematic for Manifold but
+// CGAL handles it correctly.
+//
+// R3x keys have XAngleSkew=0.01 (was 0) to work around a CGAL assertion
+// failure in OpenSCAD 2026 where perfectly symmetric front/back dish
+// sweeps create degenerate geometry. The 0.01° perturbation is imperceptible.
 
 mirror([0,0,0])keycap_cs_convex(
   keyID  = 2, //change profile refer to KeyParameters Struct

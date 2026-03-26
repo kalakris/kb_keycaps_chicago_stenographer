@@ -14,8 +14,12 @@ cd "$(dirname "$0")/.."
 OUTPUT_DIR="${1:-stl/single_keys}"
 mkdir -p "$OUTPUT_DIR"
 
-# All keys now use Manifold backend
-CGAL_KEYS=""
+# Convex keys (cs_r*x_*) must use CGAL backend.
+# The Manifold backend cannot handle the two-sweep dish boolean in the
+# convex variant — it produces high genus (18-23) with visible artifacts
+# and incorrect dish cuts. CGAL is ~50s/key vs ~0.3s but produces
+# correct geometry (Simple=yes).
+CGAL_KEYS="cs_r2x_1 cs_r3x_1 cs_r4x_1"
 
 KEYS=(
   cs_r1_1
