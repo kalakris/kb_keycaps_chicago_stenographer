@@ -46,14 +46,14 @@ keyParameters = //keyParameters[KeyID][ParameterID]
     //Column 0
     //Levee: Chicago in choc Dimension 0-3
     [17.20,  16.00,   5.6, 	   5,  3.8,    0,  -.5,     7,    -0,    -0,   2, 2,    .10,      3,     .10,      3,     2,       2], //Chicago Steno R2x 1u
-    [17.20,  16.00,   5.6, 	   5,  4.4,    0,   .0,     0,    -0,    -0,   2, 2,    .10,      3,     .10,      3,     2,       2], //Chicago Steno R3x 1u
+    [17.20,  16.00,   5.6, 	   5,  4.4,    0,   .0,  0.01,    -0,    -0,   2, 2,    .10,      3,     .10,      3,     2,       2], //Chicago Steno R3x 1u
 
     // R3x 1.25~2.25u [4:8]
-    [21.7,   15.60,   5.6, 	   5.6,  4.5,   0,   .0,   0,    -0,    -0,   2, 2.5,   .1,      3,     .1,      3,     2,       2], //Chicago Steno R3x 1.25u
-    [26.20,  15.60,   5.6, 	   5.6,  4.5,   0,   .0,   0,    -0,    -0,   2, 2.5,   .1,      3,     .1,      3,     2,       2], //Chicago Steno R3x 1.5u
-    [30.70,  15.60,   5.6, 	   5.6,  4.5,   0,   .0,   0,    -0,    -0,   2, 2.5,   .1,      3,     .1,      3,     2,       2], //Chicago Steno R3x 1.75u
-    [35.20,  15.60,   5.6, 	   5.6,  4.5,   0,   .0,   0,    -0,    -0,   2, 2.5,   .1,      3,     .1,      3,     2,       2], //Chicago Steno R3x 2.0u
-    [39.70,  15.60,   5.6, 	   5.6,  4.5,   0,   .0,   0,    -0,    -0,   2, 2.5,   .1,      3,     .1,      3,     2,       2], //Chicago Steno R3x 2.25u
+    [21.7,   15.60,   5.6, 	   5.6,  4.5,   0,   .0, 0.01,    -0,    -0,   2, 2.5,   .1,      3,     .1,      3,     2,       2], //Chicago Steno R3x 1.25u
+    [26.20,  15.60,   5.6, 	   5.6,  4.5,   0,   .0, 0.01,    -0,    -0,   2, 2.5,   .1,      3,     .1,      3,     2,       2], //Chicago Steno R3x 1.5u
+    [30.70,  15.60,   5.6, 	   5.6,  4.5,   0,   .0, 0.01,    -0,    -0,   2, 2.5,   .1,      3,     .1,      3,     2,       2], //Chicago Steno R3x 1.75u
+    [35.20,  15.60,   5.6, 	   5.6,  4.5,   0,   .0, 0.01,    -0,    -0,   2, 2.5,   .1,      3,     .1,      3,     2,       2], //Chicago Steno R3x 2.0u
+    [39.70,  15.60,   5.6, 	   5.6,  4.5,   0,   .0, 0.01,    -0,    -0,   2, 2.5,   .1,      3,     .1,      3,     2,       2], //Chicago Steno R3x 2.25u
 
 //  original from pseudo, mislabled/ missing params?
 //    [35.85,  15.65,     7, 	   7,  4.4,    0,   .0,     0,    -0,    -0,   2, 2,    .30,      5,     .30,      5,     2,       2], //Chicago Steno R3x 2u
@@ -154,9 +154,9 @@ function ellipse(a, b, d = 0, rot1 = 0, rot2 = 360) = [for (t = [rot1:step:rot2]
 
 function DishShape (a,b,c,d) =
   concat(
-//   [[c+a,-b]],
-    ellipse(a, b, d = 0,rot1 = 270, rot2 =450)
-//   [[c+a,b]]
+   [[c+a,-b]],
+    ellipse(a, b, d = 0,rot1 = 270, rot2 =450),
+   [[c+a,b]]
   );
 
 function oval_path(theta, phi, a, b, c, deform = 0) = [
@@ -246,17 +246,6 @@ module keycap_cs_convex(keyID = 0, cutLen = 0, visualizeDish = false, csrossSect
 
   FrontCurve = [ for(i=[0:len(FrontPath)-1]) transform(FrontPath[i], DishShape(DishDepth(keyID), FrontDishArc(i), DishDepth(keyID)+1.5, d = 0)) ];
   BackCurve  = [ for(i=[0:len(BackPath)-1])  transform(BackPath[i],  DishShape(DishDepth(keyID),  BackDishArc(i), DishDepth(keyID)+1.5, d = 0)) ];
-  // Combined dish curve: pre-apply different rotations to each half, then combine into one skin (no seam)
-  DishT     = translation([-TopWidShift(keyID),-TopLenShift(keyID),KeyHeight(keyID)-DishHeightDif(keyID)]);
-  DishRy    = rotation([0,-YAngleSkew(keyID),0]);
-  DishRfront = rotation([0,-90+XAngleSkew(keyID),90-ZAngleSkew(keyID)]);
-  DishRback  = rotation([0,-90-XAngleSkew(keyID),270-ZAngleSkew(keyID)]);
-  DishMfront = DishT * DishRy * DishRfront;
-  DishMback  = DishT * DishRy * DishRback;
-  DishCurve = concat(
-    [ for(i=[len(BackPath)-1:-1:1]) transform(DishMback, transform(BackPath[i], DishShape(DishDepth(keyID), BackDishArc(i), DishDepth(keyID)+1.5, d = 0))) ],
-    [ for(i=[0:len(FrontPath)-1])   transform(DishMfront, transform(FrontPath[i], DishShape(DishDepth(keyID), FrontDishArc(i), DishDepth(keyID)+1.5, d = 0))) ]
-  );
 
   //builds
   difference(){
@@ -276,9 +265,7 @@ module keycap_cs_convex(keyID = 0, cutLen = 0, visualizeDish = false, csrossSect
 //          translate([-Stab/2,0,0])rotate([0,0,stemRot])cherry_stem(KeyHeight(keyID), slop);
           //TODO add binding support?
         }
-        // Only render stem transition if it has positive height range (avoids degenerate flat geometry)
-        if (KeyHeight(keyID) - topthickness - stemCrossHeight - 0.1 > 0.01)
-          rotate([0,0,StemRot])translate([0,0,-.001])skin([for (i=[0:stemLayers-1]) transform(translation(StemTranslation(i,keyID))*rotation(StemRotation(i, keyID)), rounded_rectangle_profile(StemTransform(i, keyID),fn=fn,r=StemRadius(i, keyID)))]); //Transition Support for taller profile
+        rotate([0,0,StemRot])translate([0,0,-.001])skin([for (i=[0:stemLayers-1]) transform(translation(StemTranslation(i,keyID))*rotation(StemRotation(i, keyID)), rounded_rectangle_profile(StemTransform(i, keyID),fn=fn,r=StemRadius(i, keyID)))]); //Transition Support for taller profile
       }
     //cut for fonts and extra pattern for light?
     }
@@ -293,9 +280,11 @@ module keycap_cs_convex(keyID = 0, cutLen = 0, visualizeDish = false, csrossSect
    //Dish Shape
     if(Dish == true){
      if(visualizeDish == false){
-      skin(DishCurve);
+      translate([-TopWidShift(keyID),.00001-TopLenShift(keyID),KeyHeight(keyID)-DishHeightDif(keyID)])rotate([0,-YAngleSkew(keyID),0])rotate([0,-90+XAngleSkew(keyID),90-ZAngleSkew(keyID)])skin(FrontCurve);
+      translate([-TopWidShift(keyID),-TopLenShift(keyID),KeyHeight(keyID)-DishHeightDif(keyID)])rotate([0,-YAngleSkew(keyID),0])rotate([0,-90-XAngleSkew(keyID),270-ZAngleSkew(keyID)])skin(BackCurve);
      } else {
-      #skin(DishCurve);
+      #translate([-TopWidShift(keyID),.00001-TopLenShift(keyID),KeyHeight(keyID)-DishHeightDif(keyID)]) rotate([0,-YAngleSkew(keyID),0])rotate([0,-90+XAngleSkew(keyID),90-ZAngleSkew(keyID)])skin(FrontCurve);
+      #translate([-TopWidShift(keyID),-TopLenShift(keyID),KeyHeight(keyID)-DishHeightDif(keyID)])rotate([0,-YAngleSkew(keyID),0])rotate([0,-90-XAngleSkew(keyID),270-ZAngleSkew(keyID)])skin(BackCurve);
      }
    }
     //  if(crossSection == true) {
