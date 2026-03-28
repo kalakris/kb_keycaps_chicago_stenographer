@@ -69,6 +69,8 @@ keyParameters = //keyParameters[KeyID][ParameterID]
     [17.20,  16.00,   5.6, 	   5,  4.7,    0,   .0,      3,    -0,    -0,   2, 2.5,    .10,      2,     .10,      3,     2,       2], //Chicago Steno R2 ALT
     [17.20,  16.00,   5.6, 	   5,  5.5,    0,   .0,      7,    -0,    -0,   2, 2.5,    .10,      2,     .10,      3,     2,       2], //Chicago Steno R1 Steap
     [17.20,  16.00,   5.6, 	   5,  7.0,    0,   .0,     10,    -0,    -0,   2, 2.5,    .10,      2,     .10,      3,     2,       2], //Chicago Steno R1 mild with alt R2
+    //Thumb 1.25u (interpolated between T1 keyID2 and T1.5 keyID3) 15
+    [17.20,  20.00,  4.90, 	3.25,  4.95, -.5,  0.0,    -3,  -2.5,    -1,   2,   2,    .20,      2,     .20,   2.25,     2,       2], //Thumb 1.25
 
 ];
 
@@ -97,6 +99,8 @@ dishParameters = //dishParameter[keyID][ParameterID]
   [ 4.5,    4,    7,  -50,      7,    1.7,   11,    17,     2,      4.5,    4,    2,   -35,   11,    15,     2,     3,  4.5,    3,  4.5,   2, 203, 210], //Chicago Steno R1
   [ 4.5,    4,    7,  -50,      7,    1.7,   11,    17,     2,      4.5,    4,    2,   -35,   11,    15,     2,     3,  4.5,    3,  4.5,   2, 203, 210], //Chicago Steno R1
   [ 4.5,    4,    7,  -50,      7,    1.7,   11,    17,     2,      4.5,    4,    2,   -35,   11,    15,     2,     3,  4.5,    3,  4.5,   2, 203, 210], //Chicago Steno R1
+  //Thumb 1.25u (interpolated between T1 keyID2 and T1.5 keyID3, ratio ~0.385 for BotLen 20mm)
+  [   7,    5,    0,  -40,      7,    1.7,   16,    17,     2,         7,  3.5,    5,   -50,   16,    18,     2,   4.2,   3.75,  1.5,    3.75,   2, 199, 210], //Thumb 1.25
 
 ];
 
@@ -121,6 +125,12 @@ SecondaryDishParam =
   [   6,  3.5,    7,  -50,      3,  2.5,    8,    20,     3,          2,  4.2,    8,     0,    8,     8,     3], //Chicago Steno R3 1.75u
   // Ergo
   [   6,  3.5,    7,  -50,      3,    2,    8,     8,     2,          5,    5,    5,    15,   10,    20,     2], //highpro
+  // Padding to match keyParameters indices 12-14
+  [   6,  3.5,    7,  -50,      3,  2.5,    8,    20,     3,          2,  4.2,    8,     0,    8,    8,     3], //12: R2 ALT (placeholder)
+  [   6,  3.5,    7,  -50,      3,    2,    8,     8,     2,          5,    5,    5,    15,   10,   20,     2], //13: R1 Steep (placeholder)
+  [   6,  3.5,    7,  -50,      3,    2,    8,     8,     2,          5,    5,    5,    15,   10,   20,     2], //14: R1 mild (placeholder)
+  // Thumb 1.25u (based on T1, index 2)
+  [   6,  3.5,    7,  -50,      3,  2.5,    8,    20,     3,          2,  4.2,    8,     0,    8,    8,     3], //15: Thumb 1.25
   [   6,  3.5,    7,  -50,      3,    2,    8,     8,     2,          5,    5,    5,    15,   10,    20,     2], //Chicago Steno R2 ALT
   [   6,  3.5,    7,  -50,      3,    2,    8,     8,     2,          5,    5,    5,    15,   10,    20,     2], //Chicago Steno R1 Steep
   [   6,  3.5,    7,  -50,      3,    2,    8,     8,     2,          5,    5,    5,    15,   10,    20,     2], //Chicago Steno R1 mild

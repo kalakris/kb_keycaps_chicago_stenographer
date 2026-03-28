@@ -222,10 +222,13 @@ function InnerTransform(t, keyID) =
   ];
 
 function StemTranslation(t, keyID) =
+  // Ensure minimum 0.5mm of upward Z travel so the skin doesn't self-intersect
+  // when KeyHeight is barely above topthickness + stemCrossHeight (e.g. keyID 0).
+  let(zTravel = max(KeyHeight(keyID) - topthickness - stemCrossHeight - 0.1, 0.5))
   [
     ((1-t)/stemLayers*TopWidShift(keyID)),   //X shift
     ((1-t)/stemLayers*TopLenShift(keyID)),   //Y shift
-     stemCrossHeight+.1 + (t/stemLayers*(KeyHeight(keyID)- topthickness - stemCrossHeight-.1))   //Z shift
+     stemCrossHeight+.1 + (t/stemLayers*zTravel)   //Z shift
   ];
 
 function StemRotation(t, keyID) =
@@ -236,12 +239,14 @@ function StemRotation(t, keyID) =
   ];
 
 function StemTransform(t, keyID) =
+  // Clamp t/stemLayers to 1.0 so profile never exceeds body size when stemLayerAddition extends the range
+  let(s = min(t/stemLayers, 1))
   [
-    pow(t/stemLayers, StemExponent(keyID))*(BottomWidth(keyID) -TopLenDiff(keyID)-wallthickness) + (1-pow(t/stemLayers, StemExponent(keyID)))*(stemWid - 2*slop),
-    pow(t/stemLayers, StemExponent(keyID))*(BottomLength(keyID)-TopLenDiff(keyID)-wallthickness) + (1-pow(t/stemLayers, StemExponent(keyID)))*(stemLen - 2*slop)
+    pow(s, StemExponent(keyID))*(BottomWidth(keyID) -TopLenDiff(keyID)-wallthickness) + (1-pow(s, StemExponent(keyID)))*(stemWid - 2*slop),
+    pow(s, StemExponent(keyID))*(BottomLength(keyID)-TopLenDiff(keyID)-wallthickness) + (1-pow(s, StemExponent(keyID)))*(stemLen - 2*slop)
   ];
 
-function StemRadius(t, keyID) = pow(t/stemLayers,3)*3 + (1-pow(t/stemLayers, 3))*1;
+function StemRadius(t, keyID) = let(s = min(t/stemLayers, 1)) pow(s,3)*3 + (1-pow(s, 3))*1;
   //Stem Exponent
 
 
@@ -277,7 +282,14 @@ module keycap_cs_convex(keyID = 0, cutLen = 0, visualizeDish = false, csrossSect
 //          translate([-Stab/2,0,0])rotate([0,0,stemRot])cherry_stem(KeyHeight(keyID), slop);
           //TODO add binding support?
         }
-        rotate([0,0,StemRot])translate([0,0,-.001])skin([for (i=[0:stemLayers-1]) transform(translation(StemTranslation(i,keyID))*rotation(StemRotation(i, keyID)), rounded_rectangle_profile(StemTransform(i, keyID),fn=fn,r=StemRadius(i, keyID)))]); //Transition Support for taller profile
+        // Extra layers when Z clearance is tight (e.g. keyID 0: keyh=3.8, topthickness=2, stemCrossHeight=1.8)
+        // to spread the transition over more vertical distance and avoid self-intersection.
+        stemLayerAddition = (KeyHeight(keyID) - topthickness - stemCrossHeight < 0.5) ? 20 : 0;
+        // No rotation on stem transition (matches thumb file approach) — rotating
+        // the cross-sections creates twisted, nonplanar quad faces that cause CGAL
+        // assertion failures. The transition just translates upward; any mismatch
+        // with the rotated inner shell is hidden inside the outer shell.
+        translate([0,0,-.001])skin([for (i=[0:stemLayers-1+stemLayerAddition]) transform(translation(StemTranslation(i,keyID)), rounded_rectangle_profile(StemTransform(i, keyID),fn=fn,r=1))]); //Transition Support for taller profile
       }
     //cut for fonts and extra pattern for light?
     }
