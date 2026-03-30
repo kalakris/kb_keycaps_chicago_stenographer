@@ -125,7 +125,7 @@ I suggest printing one version with the homing dots and another with the homing 
 
 ### 3.2. What to print...
 
-You can find all files in the stl directory. You can also look at the `export_cs_*.scad` files to see what key models were used and further comments on how to use the sets.
+Look at the `export_*.scad` files to see what key models were used and further comments on how to use the sets. Render them with OpenSCAD to generate STL files (STLs are not checked into git due to size).
 
 #### 3.2.1. If you have a 5x3 row board (Such as the corne without the outer coulmn)
 
@@ -159,6 +159,24 @@ To be able to use lateral keys on both sides and get both types of homing keys y
 All of the above, PLUS...
 
 * 1x `cs_row_r3_regular.stl` for the top alpha row (the r2 keycaps will be used for the num row)
+
+#### 3.2.4. If you have a MoErgo Go60 (6x4 split columnar)
+
+The Go60 has 6 columns x 4 rows per half plus a 6-key thumb cluster. Print the following:
+
+| File | Keys | Qty | Subtotal | Notes |
+|------|------|-----|----------|-------|
+| `export_go60_regular_columns.scad` | 10 | 2 | 20 | C3+C4 (ring/middle) R1-R4 + 2 spare convex thumbs. Render with CGAL. |
+| `export_go60_lateral_columns.scad` | 8 | 2 | 16 | C6+C5 (outer pinky pair) lateral R1-R4 |
+| `export_go60_inner_columns_left.scad` | 10 | 1 | 10 | Left C2+C1 lateral R1-R4 + homing bar + homing dot |
+| `export_go60_inner_columns_right.scad` | 10 | 1 | 10 | Right C2+C1 lateral R1-R4 + homing bar + homing dot |
+| `export_go60_thumbs.scad` | 10 | 1 | 10 | Main thumb cluster: ridged + convex + spare convex. Render with CGAL. |
+| `export_go60_thumbs_alt.scad` | 10 | 1 | 10 | Alt thumb cluster: 8 convex R2 + 2 thumb 1.25u. Render with CGAL. |
+| **Total** | | | **76** | |
+
+Plates marked "Render with CGAL" contain convex keys that require the CGAL backend (`openscad --backend=CGAL`). Other plates can use the faster Manifold backend.
+
+Open `go60_visualization.scad` in OpenSCAD to preview the full keyboard layout with all keys at their approximate positions.
 
 ### 3.3. How to order on JLCPCB
 

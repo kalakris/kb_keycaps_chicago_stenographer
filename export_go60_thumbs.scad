@@ -28,4 +28,4 @@ keycap_ids = [
     "cs_r3x_1",   // Spare (right)
 ];
 
-gen_sprued_keycaps(keycap_ids);
+gen_sprued_keycaps(keycap_ids, spacing=20);

@@ -24,4 +24,4 @@ keycap_ids = [
     "cs_t_125_r",  // Outer thumb (right)
 ];
 
-gen_sprued_keycaps(keycap_ids);
+gen_sprued_keycaps(keycap_ids, spacing=20);
