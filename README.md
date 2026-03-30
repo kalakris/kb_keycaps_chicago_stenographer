@@ -219,6 +219,7 @@ So, it will be approximately $32.88 + shipping in total.
 * Generate STLs
   * Run `make` and it will generate all missing STLs
   * Alternatively you can also select which file to generate by running something like `make stl/cs_row_thumbs.stl`, but keep in mind that you have to use the file name of the final stl file and not of the source `.scad` file
+  * STLs are exported in binary format (`--export-format binstl`) which is ~6x smaller than ASCII STL. If you render manually, add this flag to keep file sizes manageable (e.g. ~40 MB vs ~250 MB for a 10-key plate).
 
 Alternatively you can also run the GUI version, but it's a bit slow.
 

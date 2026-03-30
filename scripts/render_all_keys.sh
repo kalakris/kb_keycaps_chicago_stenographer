@@ -57,6 +57,8 @@ KEYS=(
   cs_r4x_1
   cs_t_15_l
   cs_t_15_r
+  cs_t_125_l
+  cs_t_125_r
   cs_t_1_l
   cs_t_1_r
   cs_t_2_l
@@ -80,7 +82,7 @@ for key in "${KEYS[@]}"; do
     BACKEND="CGAL"
   fi
   echo "[$DONE/$TOTAL] Rendering $key ($BACKEND)..."
-  if openscad --backend="$BACKEND" -o "${OUTPUT_DIR}/${key}.stl" -D "keycap_id=\"${key}\"" gen_single_keycap.scad 2>&1; then
+  if openscad --backend="$BACKEND" --export-format binstl -o "${OUTPUT_DIR}/${key}.stl" -D "keycap_id=\"${key}\"" gen_single_keycap.scad 2>&1; then
     SIZE=$(stat -f%z "${OUTPUT_DIR}/${key}.stl" 2>/dev/null || stat -c%s "${OUTPUT_DIR}/${key}.stl" 2>/dev/null || echo 0)
     echo "  OK: ${key}.stl (${SIZE} bytes)"
   else
