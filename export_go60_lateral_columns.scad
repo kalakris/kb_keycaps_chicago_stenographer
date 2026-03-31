@@ -8,9 +8,8 @@
 //
 // The left and right variations sit next to each other in a column pair.
 //
-// Order quantity: 4 (for C6+C5, C2+C1 lateral pairs on each half)
-// If you want homing keys on some pairs, replace those orders with
-// export_go60_lateral_columns_homing_bar or _homing_dot instead.
+// 10 keys: 8 lateral (R1-R4 × 2 columns) + 2 spare ridged thumbs
+// Order quantity: 2 (for C6+C5 on each half)
 
 use <gen_sprued_keycaps.scad>
 
@@ -26,6 +25,10 @@ keycap_ids = [
     "cs_r2_lateral_r",  // Row 2
     "cs_r3_lateral_r",  // Row 3 (home)
     "cs_r4_lateral_r",  // Row 4 (bottom)
+
+    // Spare ridged thumb keys (no spares on other plates)
+    "cs_t_1_l",         // Spare outer thumb (left)
+    "cs_t_1_r",         // Spare outer thumb (right)
 ];
 
 gen_sprued_keycaps(keycap_ids, vertical=true);

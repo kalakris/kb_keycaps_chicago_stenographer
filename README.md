@@ -167,12 +167,12 @@ The Go60 has 6 columns x 4 rows per half plus a 6-key thumb cluster. Print the f
 | File | Keys | Qty | Subtotal | Notes |
 |------|------|-----|----------|-------|
 | `export_go60_regular_columns.scad` | 10 | 2 | 20 | C3+C4 (ring/middle) R1-R4 + 2 spare convex thumbs. Render with CGAL. |
-| `export_go60_lateral_columns.scad` | 8 | 2 | 16 | C6+C5 (outer pinky pair) lateral R1-R4 |
+| `export_go60_lateral_columns.scad` | 10 | 2 | 20 | C6+C5 (outer pinky pair) lateral R1-R4 + 2 spare ridged thumbs |
 | `export_go60_inner_columns_left.scad` | 10 | 1 | 10 | Left C2+C1 lateral R1-R4 + homing bar + homing dot |
 | `export_go60_inner_columns_right.scad` | 10 | 1 | 10 | Right C2+C1 lateral R1-R4 + homing bar + homing dot |
 | `export_go60_thumbs.scad` | 10 | 1 | 10 | Main thumb cluster: ridged + convex + spare convex. Render with CGAL. |
 | `export_go60_thumbs_alt.scad` | 10 | 1 | 10 | Alt thumb cluster: 8 convex R2 + 2 thumb 1.25u. Render with CGAL. |
-| **Total** | | | **76** | |
+| **Total** | | | **80** | |
 
 Plates marked "Render with CGAL" contain convex keys that require the CGAL backend (`openscad --backend=CGAL`). Other plates can use the faster Manifold backend.
 
