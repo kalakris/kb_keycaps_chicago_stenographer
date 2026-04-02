@@ -1,5 +1,13 @@
 # Trapezoidal Keycap Rendering Fixes - Work In Progress
 
+## Background
+
+The Go60 keyboard (and similar boards) has splayed thumb keys arranged on a circular arc.
+Standard rectangular keycaps leave wedge-shaped gaps between these arc-positioned keys.
+The trapezoidal sector-shaped keycaps fill these gaps with footprints that follow the arc
+geometry — wider on the outer edge, narrower on the inner edge, with arced outer/inner
+edges. See README.md section 3.1.8 and `go60_visualization.scad` for full context.
+
 ## Goal
 
 Fix rendering artifacts (holes, spikes, notches) on the three trapezoidal sector-shaped
