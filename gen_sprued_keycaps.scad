@@ -1,6 +1,7 @@
 use <Choc_Chicago_Steno.scad>
 use <Choc_Chicago_Steno_Convex.scad>
 use <Choc_Chicago_Steno_Thumb.scad>
+use <Choc_Chicago_Steno_Thumb_Trap.scad>
 
 module gen_sprued_keycaps(keycap_ids, spacing=18, spru_radius=0.8, vertical=false) {
     translate([0, -spacing * 1, 0])
@@ -73,6 +74,15 @@ available_keycaps = [
     ["cs_t_15_r",           3,  3, 1.00,   0, 90, true,  false, false],
     ["cs_t_2_l",            3,  4, 1.00,   0, 90, false, false, false],
     ["cs_t_2_r",            3,  4, 1.00,   0, 90, true,  false, false],
+
+    // Trapezoidal / sector-shaped keys for arc-splayed thumb positions
+    // Convex dome (for T2 — symmetric sector)
+    ["cs_t_trap_convex",    4,  0, 1.00,   0,  0, false, false, false],
+    // Convex dome (for T1 — inner edge aligned to C1 column above)
+    ["cs_t_trap_convex_t1", 4,  2, 1.00,   0,  0, false, false, false],
+    // Thumb scoop (for T3 — same profile as cs_t_1)
+    ["cs_t_trap_thumb_l",   4,  1, 1.00,   0,  0, false, false, false],
+    ["cs_t_trap_thumb_r",   4,  1, 1.00,   0,  0, true,  false, false],
 
     // Stem rotated thumbs for boards where the inner thumb switch is not
     // rotated
@@ -182,6 +192,18 @@ module cs_default(keyID, variation=1, stem_rot=0, dot=false, bar=false) {
             crossSection=false,
             homeDot = dot,
             homeBar = bar
+        );
+    } else if(variation == 4) {
+        keycap_cs_thumb_trap(
+            keyID    = keyID,
+            dishType = (keyID == 0 || keyID == 2) ? "convex" : "thumb",
+            Stem     = true,
+            StemRot  = stem_rot,
+            Dish     = true,
+            visualizeDish = false,
+            crossSection  = false,
+            homeDot  = dot,
+            homeBar  = bar
         );
     }
 }

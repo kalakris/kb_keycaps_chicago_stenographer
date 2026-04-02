@@ -87,12 +87,12 @@ left_finger_grid = [
 // Keys 3-5 splay outward on a circular arc.
 // Go60 naming: T1=innermost (C1 R5), T2=middle, T3=outermost.
 left_thumb_keys = [
-    "cs_r3x_1",    // C4 R5 - convex
-    "cs_r3x_1",    // C3 R5 - convex
-    "cs_t_1_l",    // C2 R5 - thumb
-    "cs_r3x_1",    // T1 (innermost splayed) - convex
-    "cs_r3x_1",    // T2 (middle splayed) - convex
-    "cs_t_1_r",    // T3 (outermost splayed) - thumb
+    "cs_r3x_1",          // C4 R5 - convex
+    "cs_r3x_1",          // C3 R5 - convex
+    "cs_t_1_l",          // C2 R5 - thumb
+    "cs_t_trap_convex_t1", // T1 (innermost splayed) - trap convex, inner edge aligned to C1
+    "cs_t_trap_convex",   // T2 (middle splayed) - trap convex
+    "cs_t_trap_thumb_r",  // T3 (outermost splayed) - trap thumb
 ];
 
 // Alt thumb row: all convex R2 except T3 = 1.25u thumb
