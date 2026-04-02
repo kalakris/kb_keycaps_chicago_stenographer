@@ -116,12 +116,12 @@ keyParameters = [
 
 convexDishParameters = [
 //  FFwd1  FFwd2  FPit1  FPit2  DshDep DshHDif FArcIn FArcFn FArcEx  BFwd1  BFwd2  BPit1  BPit2  BArcIn BArcFn BArcEx
-    [ 6.0,  4.5,   -3,   -45,    1.5,   3.75,  10.75, 10.95,   2,    6.0,   4.5,    -3,   -45,   10.75, 10.95,   2], // Convex dome, sweep extended for BotLen=20
+    [ 8.0,  6.0,   -3,   -45,    1.5,   3.75,  14.0,  14.5,    2,    8.0,   6.0,    -3,   -45,   14.0,  14.5,    2], // Convex dome, extended to cover all sector corners
 ];
 
 thumbDishParameters = [
 //  FFwd1 FFwd2 FPit1 FPit2  DshDep DshHDif FArcIn FArcFn FArcEx  BFwd1  BFwd2  BPit1  BPit2  BArcIn BArcFn BArcEx FTani FTanf BTani BTanf TanEX PhiInit PhiFin
-    [  7,  5,      0,  -40,      7,    1.7,   16,    20,     2,      7,   3.5,     5,   -50,    16,    20,     2,    5,   3.75,   2,  3.75,   2,   199,   210], // Thumb scoop for 1.25u depth
+    [  9,  7,      0,  -40,      7,    1.7,   20,    24,     2,      9,   5.5,     5,   -50,    20,    24,     2,    5,   3.75,   2,  3.75,   2,   199,   210], // Thumb scoop, extended to cover all sector corners
 ];
 
 /* ── Parameter accessor functions ── */
@@ -268,7 +268,7 @@ function StemTransform(t, keyID, StemRot) =
 // When depth varies, outer/inner edges interpolate smoothly between
 // the different radii rather than following a single arc.
 
-function sector_rectangle(a, b=[0.1, 0.1], arc_r=79.1, fn=32, left_line=undef, depth_ratio=[1,1]) =
+function sector_rectangle(a, b=[0.1, 0.1], arc_r=79.1, fn=32, left_line=undef, depth_ratio=[1,1], fillet=0) =
     let(
         center_hw = a[0],
         hd = a[1],
@@ -322,26 +322,37 @@ function sector_rectangle(a, b=[0.1, 0.1], arc_r=79.1, fn=32, left_line=undef, d
 
         // Arc angles at left corners
         a_out_l = asin(max(-0.99, min(0.99, out_l_x / r_out_l))),
-        a_in_l  = asin(max(-0.99, min(0.99, in_l_x / r_in_l)))
+        a_in_l  = asin(max(-0.99, min(0.99, in_l_x / r_in_l))),
+
+        // Fillet: chamfer sharp corners to prevent tangential dish intersections.
+        // Each edge is shortened by fillet/edge_length at each end; the polygon
+        // connection between shortened edges forms the chamfer.
+        _right_len = norm([out_r_x - in_r_x, out_r_y - in_r_y]),
+        _left_len  = norm([out_l_x - in_l_x, out_l_y - in_l_y]),
+        _outer_len = ((r_out_r + r_out_l) / 2) * abs(eff_ha - a_out_l) * 3.14159265 / 180,
+        _inner_len = ((r_in_r + r_in_l) / 2) * abs(eff_ha - a_in_l) * 3.14159265 / 180,
+        _fr = fillet > 0 ? min(fillet / max(_right_len, 0.001), 0.12) : 0,
+        _fo = fillet > 0 ? min(fillet / max(_outer_len, 0.001), 0.12) : 0,
+        _fl = fillet > 0 ? min(fillet / max(_left_len, 0.001), 0.12) : 0,
+        _fi = fillet > 0 ? min(fillet / max(_inner_len, 0.001), 0.12) : 0
     )
     concat(
-        // Right edge: inner-right to outer-right
-        [for (i = [0:n-1]) let(t = i/n)
+        // Right edge: inner-right to outer-right (shortened by fillet at each end)
+        [for (i = [0:n-1]) let(t = _fr + i/n * (1 - 2*_fr))
             [(1-t)*in_r_x + t*out_r_x, (1-t)*in_r_y + t*out_r_y]],
 
         // Outer edge: from right (+eff_ha, r_out_r) to left (a_out_l, r_out_l)
-        // Radius interpolates linearly when depth varies per side
-        [for (i = [0:n-1]) let(t = i/n,
+        [for (i = [0:n-1]) let(t = _fo + i/n * (1 - 2*_fo),
             r_out_t = r_out_r + t*(r_out_l - r_out_r),
             a_angle = eff_ha + t*(a_out_l - eff_ha))
             [r_out_t*sin(a_angle), r_out_t*cos(a_angle) - arc_r]],
 
         // Left edge: outer-left to inner-left (straight line)
-        [for (i = [0:n-1]) let(t = i/n)
+        [for (i = [0:n-1]) let(t = _fl + i/n * (1 - 2*_fl))
             [(1-t)*out_l_x + t*in_l_x, (1-t)*out_l_y + t*in_l_y]],
 
         // Inner edge: from left (a_in_l, r_in_l) to right (+eff_ha, r_in_r)
-        [for (i = [0:n-1]) let(t = i/n,
+        [for (i = [0:n-1]) let(t = _fi + i/n * (1 - 2*_fi),
             r_in_t = r_in_l + t*(r_in_r - r_in_l),
             a_angle = a_in_l + t*(eff_ha - a_in_l))
             [r_in_t*sin(a_angle), r_in_t*cos(a_angle) - arc_r]]
@@ -470,11 +481,12 @@ module keycap_cs_thumb_trap(
         difference() {
             union() {
                 difference() {
-                    // Outer shell: smooth elliptical_rectangle cross-sections
+                    // Outer shell: oversized smooth body so sector trim exclusively
+                    // determines edges (dish operates on smooth surface, no corner artifacts)
                     skin([for (i = [0:layers-1])
                         transform(
                             translation(CapTranslation(i, keyID)) * rotation(CapRotation(i, keyID)),
-                            elliptical_rectangle(CapTransform(i, keyID), b = CapRoundness(i, keyID), fn=fn)
+                            elliptical_rectangle(CapTransform(i, keyID) + [8, 8], b = CapRoundness(i, keyID), fn=fn)
                         )
                     ]);
 
@@ -531,7 +543,8 @@ module keycap_cs_thumb_trap(
                     arc_r = trap_arc_r,
                     fn = fn,
                     left_line = ll,
-                    depth_ratio = dr
+                    depth_ratio = dr,
+                    fillet = 0.5
                 )
             )
         ]);

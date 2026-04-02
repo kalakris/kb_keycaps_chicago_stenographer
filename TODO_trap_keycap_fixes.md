@@ -99,25 +99,76 @@ surface always intersects smooth curvature — no degenerate tangent intersectio
    trim boundaries, creating wavy/doubled edges. T1's left_line alignment is also lost
    because the elliptical body doesn't know about the C1-aligned edge.
 
-### Recommended Next Steps
+### Current State (option 5 refined — committed as checkpoint)
 
-The intersection approach (option 5) is the most promising but needs refinement:
+Three changes were combined to eliminate artifacts:
 
-- **Edge quality**: The elliptical body needs to be slightly LARGER than the sector shape
-  at all points so the sector trim is the sole determinant of the edge shape. Currently
-  the elliptical body is the same size, so at some heights it's smaller than the sector,
-  creating mixed edges.
+#### A. Oversized smooth body (+8mm per full dimension = 4mm per side)
+The elliptical_rectangle outer shell is enlarged by `+[8,8]` so it fully contains the
+sector at every layer. The sector trim exclusively determines the final edge shape.
+The dish operates on the smooth oversized surface (no sector corners involved).
 
-- **T1 left_line**: The elliptical body doesn't implement the C1-aligned left edge. The
-  sector trim handles the footprint, but the inner shell and stem transition may not
-  align correctly. May need to extend the elliptical body width for T1 to ensure the
-  sector trim always wins.
+**Result**: Clean straight side edges on all three keys. No wavy/doubled edges.
+T2 (symmetric convex) rendered perfectly with this change alone.
 
-- Alternative: instead of `elliptical_rectangle` for the smooth body, use a simple
-  `circle()` or `square()` that's guaranteed larger than the sector at all heights.
-  Then the sector intersection exclusively determines the shape. The dish still operates
-  on the smooth oversized body (no corner artifacts), and the sector trim gives clean
-  straight edges.
+#### B. Extended dish sweep coverage
+T1 and T3 still had spikes at corners where the dish sweep didn't reach far enough:
+- T1 spike at right outer corner: depth_ratio 10/9 extends the right side to 10.51mm,
+  but the original dish forward distance was only 10.5mm — the dish barely missed.
+- T3 spike on left side: XSkew=-3, YSkew=-3 tilts the scoop, and the high side of
+  the tilt didn't get enough dish coverage at the corner.
+
+Fix: increased dish parameters so the sweep covers all corners with margin:
+- Convex: arcs 10.75/10.95 → 14.0/14.5, forward 6.0+4.5=10.5 → 8.0+6.0=14.0 per dir
+- Thumb: arcs 16/20 → 20/24, forward 7+5=12 → 9+7=16 (front), 7+3.5=10.5 → 9+5.5=14.5 (back)
+
+#### C. Corner chamfers (fillet=0.5mm) on sector trim
+Added `fillet` parameter to `sector_rectangle()`. When fillet > 0, each edge is
+shortened by fillet/edge_length at each end. The polygon connections between
+shortened edges form chamfer diagonals at the corners. This prevents any remaining
+tangential dish-sector intersections that CGAL resolves as spikes.
+
+### Known Trade-offs (to address in next session)
+
+1. **Chamfered corners visible**: The 0.5mm chamfers create small flat cuts at the
+   four corners of the sector, visible as "chopped-off" corners. The original keys
+   have sharp corners. Need to either reduce the chamfer size (if the extended dish
+   alone is sufficient) or replace chamfers with smooth rounded fillets.
+
+2. **Reduced convex dome curvature**: The wider arcs (14mm vs 10.85mm) make the
+   dome flatter within the visible sector footprint. The dome depth at center is
+   still 1.5mm, but the curvature variation from center to edge dropped from
+   0.28mm to 0.16mm. The original convex keys have more pronounced dome curvature.
+   May need to increase DishDepth to compensate, or find a smaller arc increase
+   that still covers corners.
+
+3. **T3 scoop profile changed**: The original T3 had an asymmetric scoop profile
+   (one smooth side, one sharper ridge) due to the XSkew/YSkew interaction with
+   the original dish sweep extent. The extended sweep smooths this out. Need to
+   compare with the original T3 reference and possibly use the original thumb dish
+   parameters with a different artifact-prevention strategy.
+
+### Recommended Next Steps (for next session)
+
+1. **Test without chamfers**: Try fillet=0 with just the extended dish to see if the
+   extended coverage alone is sufficient. If so, remove the chamfer to get sharp corners.
+
+2. **Tune dish parameters separately**: Instead of one set of dish parameters for all
+   keys, consider per-key dish tuning. The original convex/thumb dish parameters were
+   tuned for aesthetics; the extensions were purely for coverage. A middle ground
+   might preserve the original look while avoiding spikes.
+
+3. **Consider the "sector body + dish mask" architecture**: Instead of
+   `intersection(dished_smooth_body, sector_trim)`, restructure as:
+   - Build full sector keycap (outer-inner+stem) using sector_rectangle
+   - Build oversized smooth body with dish applied
+   - `intersection(sector_keycap, dished_smooth_body)` — the sector determines
+     ALL edges/walls, the smooth body only contributes the dish surface
+   This might allow using the original dish parameters because the sector body
+   (not the smooth body) determines the wall shape.
+
+4. **Compare with reference keys**: Render the regular convex and thumb keys side
+   by side with the trap keys to match dome curvature and scoop profile.
 
 ## Key Files
 
