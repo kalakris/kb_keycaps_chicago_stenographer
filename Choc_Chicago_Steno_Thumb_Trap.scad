@@ -116,12 +116,12 @@ keyParameters = [
 
 convexDishParameters = [
 //  FFwd1  FFwd2  FPit1  FPit2  DshDep DshHDif FArcIn FArcFn FArcEx  BFwd1  BFwd2  BPit1  BPit2  BArcIn BArcFn BArcEx
-    [ 4.5,  3.3,   -3,   -45,    1.5,   3.75,  10.75, 10.95,   2,    4.5,   3.3,    -3,   -45,   10.75, 10.95,   2], // R3x convex 1.25u depth
+    [ 6.0,  4.5,   -3,   -45,    1.5,   3.75,  10.75, 10.95,   2,    6.0,   4.5,    -3,   -45,   10.75, 10.95,   2], // Convex dome, sweep extended for BotLen=20
 ];
 
 thumbDishParameters = [
 //  FFwd1 FFwd2 FPit1 FPit2  DshDep DshHDif FArcIn FArcFn FArcEx  BFwd1  BFwd2  BPit1  BPit2  BArcIn BArcFn BArcEx FTani FTanf BTani BTanf TanEX PhiInit PhiFin
-    [  7,  5,      0,  -40,      7,    1.7,   16,    20,     2,      7,   3.5,     5,   -50,    16,    20,     2,    5,   3.75,   2,  3.75,   2,   199,   210], // Thumb 1.25u depth
+    [  7,  5,      0,  -40,      7,    1.7,   16,    20,     2,      7,   3.5,     5,   -50,    16,    20,     2,    5,   3.75,   2,  3.75,   2,   199,   210], // Thumb scoop for 1.25u depth
 ];
 
 /* ── Parameter accessor functions ── */
@@ -275,7 +275,7 @@ function sector_rectangle(a, b=[0.1, 0.1], arc_r=79.1, fn=32, left_line=undef, d
         hd_left  = hd * depth_ratio[0],
         hd_right = hd * depth_ratio[1],
         eff_ha = asin(min(center_hw / arc_r, 0.99)),
-        n = max(4, fn / 4),
+        n = fn,
 
         // ── Right edge corners (radial, using hd_right) ──
         r_out_r = arc_r + hd_right,
@@ -354,7 +354,9 @@ function ellipse(a, b, d = 0, rot1 = 0, rot2 = 360) =
 
 function DishShape(a, b, c, d) =
     concat(
-        ellipse(a, b, d = 0, rot1 = 90, rot2 = 270)
+        [[c+a,-b]],
+        ellipse(a, b, d = 0, rot1 = 270, rot2 = 450),
+        [[c+a,b]]
     );
 
 function DishShape2(a, b, phi = 200, theta, r) =
@@ -414,6 +416,32 @@ function rounded_rectangle_profile(size=[1,1], r=1, fn=32) = [
             + sign_y(index, fn) * [0, size[1]/2-r]
 ];
 
+// Smooth cross-section from Choc_Chicago_Steno_Convex.scad.
+// Used to build a smooth body for dish boolean (avoids dish
+// artifacts at sector corners), then intersected with sector shape.
+function elliptical_rectangle(a = [1,1], b =[1,1], fn=32) = [
+    for (index = [0:fn-1])
+     let(theta1 = -atan(a[1]/b[1])+ 2*atan(a[1]/b[1])*index/fn)
+      [b[1]*cos(theta1), a[1]*sin(theta1)]
+    + [a[0]*cos(atan(b[0]/a[0])) , 0]
+    - [b[1]*cos(atan(a[1]/b[1])) , 0],
+    for(index = [0:fn-1])
+     let(theta2 = atan(b[0]/a[0]) + (180 -2*atan(b[0]/a[0]))*index/fn)
+      [a[0]*cos(theta2), b[0]*sin(theta2)]
+    - [0, b[0]*sin(atan(b[0]/a[0]))]
+    + [0, a[1]*sin(atan(a[1]/b[1]))],
+    for(index = [0:fn-1])
+     let(theta2 = -atan(a[1]/b[1])+180+ 2*atan(a[1]/b[1])*index/fn)
+      [b[1]*cos(theta2), a[1]*sin(theta2)]
+    - [a[0]*cos(atan(b[0]/a[0])) , 0]
+    + [b[1]*cos(atan(a[1]/b[1])) , 0],
+    for(index = [0:fn-1])
+     let(theta2 = atan(b[0]/a[0]) + 180 + (180 -2*atan(b[0]/a[0]))*index/fn)
+      [a[0]*cos(theta2), b[0]*sin(theta2)]
+    + [0, b[0]*sin(atan(b[0]/a[0]))]
+    - [0, a[1]*sin(atan(a[1]/b[1]))]
+]/2;
+
 /* ── Main keycap module ── */
 
 module keycap_cs_thumb_trap(
@@ -432,72 +460,81 @@ module keycap_cs_thumb_trap(
     dr = (keyID == 2) ? trap_t1_depth_ratio : [1, 1];
 
     // ── Build body ──
-    difference() {
-        union() {
-            difference() {
-                // Outer shell: sweep of sector cross-sections
-                skin([for (i = [0:layers-1])
-                    transform(
-                        translation(CapTranslation(i, keyID)) * rotation(CapRotation(i, keyID)),
-                        sector_rectangle(
-                            a = CapTransform(i, keyID) / 2,
-                            b = CapRoundness(i, keyID),
-                            arc_r = trap_arc_r,
-                            fn = fn,
-                            left_line = ll,
-                            depth_ratio = dr
-                        )
-                    )
-                ]);
+    // Strategy: build a smooth elliptical_rectangle keycap, apply dish
+    // (clean boolean on smooth surfaces), then intersect with sector
+    // shape to trim the footprint. This avoids dish-corner artifacts
+    // that occur when the dish boolean operates on sector geometry.
 
-                // Cut inner shell
-                if (Stem == true) {
-                    translate([0, 0, -.001])
+    intersection() {
+        // ── Smooth keycap with dish ──
+        difference() {
+            union() {
+                difference() {
+                    // Outer shell: smooth elliptical_rectangle cross-sections
                     skin([for (i = [0:layers-1])
                         transform(
-                            translation(InnerTranslation(i, keyID)) * rotation(CapRotation(i, keyID)),
-                            sector_rectangle(
-                                a = InnerTransform(i, keyID) / 2,
-                                b = CapRoundness(i, keyID),
-                                arc_r = trap_arc_r,
-                                fn = fn,
-                                left_line = ll,
-                                depth_ratio = dr
+                            translation(CapTranslation(i, keyID)) * rotation(CapRotation(i, keyID)),
+                            elliptical_rectangle(CapTransform(i, keyID), b = CapRoundness(i, keyID), fn=fn)
+                        )
+                    ]);
+
+                    // Cut inner shell
+                    if (Stem == true) {
+                        translate([0, 0, -.001])
+                        skin([for (i = [0:layers-1])
+                            transform(
+                                translation(InnerTranslation(i, keyID)) * rotation(CapRotation(i, keyID)),
+                                elliptical_rectangle(InnerTransform(i, keyID), b = CapRoundness(i, keyID), fn=fn)
                             )
+                        ]);
+                    }
+                }
+
+                // Stem
+                if (Stem == true) {
+                    rotate([0, 0, StemRot])
+                        choc_stem(draftAng = 0);
+
+                    stemLayerAddition = 20;
+                    translate([0, 0, -.001])
+                    skin([for (i = [0:stemLayers-1 + stemLayerAddition])
+                        transform(
+                            translation(StemTranslation(i, keyID)),
+                            rounded_rectangle_profile(StemTransform(i, keyID, StemRot), fn=fn, r=1)
                         )
                     ]);
                 }
             }
 
-            // Stem
-            if (Stem == true) {
-                rotate([0, 0, StemRot])
-                    choc_stem(draftAng = 0);
+            // Dish cut on smooth body — no corner artifacts
+            if (Dish == true) {
+                if (dishType == "convex") {
+                    _cx_dish_cut(keyID);
+                } else {
+                    _thumb_dish_cut(keyID);
+                }
+            }
 
-                stemLayerAddition = 20;
-                translate([0, 0, -.001])
-                skin([for (i = [0:stemLayers-1 + stemLayerAddition])
-                    transform(
-                        translation(StemTranslation(i, keyID)),
-                        rounded_rectangle_profile(StemTransform(i, keyID, StemRot), fn=fn, r=1)
-                    )
-                ]);
+            // Cross-section cut for debugging
+            if (crossSection == true) {
+                translate([0, -25, -.1]) cube([25, 50, 15]);
             }
         }
 
-        // ── Dish cut ──
-        if (Dish == true) {
-            if (dishType == "convex") {
-                _cx_dish_cut(keyID);
-            } else {
-                _thumb_dish_cut(keyID);
-            }
-        }
-
-        // Cross-section cut for debugging
-        if (crossSection == true) {
-            translate([0, -25, -.1]) cube([25, 50, 15]);
-        }
+        // ── Trim to sector footprint ──
+        skin([for (i = [0:layers-1])
+            transform(
+                translation(CapTranslation(i, keyID)) * rotation(CapRotation(i, keyID)),
+                sector_rectangle(
+                    a = CapTransform(i, keyID) / 2,
+                    b = CapRoundness(i, keyID),
+                    arc_r = trap_arc_r,
+                    fn = fn,
+                    left_line = ll,
+                    depth_ratio = dr
+                )
+            )
+        ]);
     }
 }
 
@@ -512,8 +549,8 @@ module _cx_dish_cut(keyID) {
     ], steps=stepsize, loop=false, start_position=$t*4);
 
     BackPath = quantize_trajectories([
-        trajectory(backward = CxBackForward1(i), pitch = -CxBackPitch1(i)),
-        trajectory(backward = CxBackForward2(i), pitch = -CxBackPitch2(i))
+        trajectory(forward = CxBackForward1(i), pitch = CxBackPitch1(i)),
+        trajectory(forward = CxBackForward2(i), pitch = CxBackPitch2(i))
     ], steps=stepsize, loop=false, start_position=$t*4);
 
     function FDishArc(t) =
