@@ -19,6 +19,7 @@ If you like these keycaps after trying the 3D printed version, [consider buying 
     - [3.1.5. 1.5u Thumb Key](#315-15u-thumb-key)
     - [3.1.6. Convex Keycaps](#316-convex-keycaps)
     - [3.1.7. Lateral Keycaps](#317-lateral-keycaps)
+    - [3.1.8. Trapezoidal Sector Keycaps](#318-trapezoidal-sector-keycaps)
   - [3.2. What to print...](#32-what-to-print)
     - [3.2.1. If you have a 5x3 row board (Such as the corne without the outer coulmn)](#321-if-you-have-a-5x3-row-board-such-as-the-corne-without-the-outer-coulmn)
     - [3.2.2. If you have a 6x3 row board (Such as the corne WITH the outer coulmn)](#322-if-you-have-a-6x3-row-board-such-as-the-corne-with-the-outer-coulmn)
@@ -123,6 +124,24 @@ The file contains only one set of the two. If you want it on both sides of the k
 
 I suggest printing one version with the homing dots and another with the homing bars to get all possible variations.
 
+#### 3.1.8. Trapezoidal Sector Keycaps
+
+For keyboards with splayed thumb keys arranged on a circular arc (such as the Go60), standard rectangular keycaps leave wedge-shaped gaps. The trapezoidal sector keycaps (`Choc_Chicago_Steno_Thumb_Trap.scad`) fill these gaps with sector-shaped footprints:
+
+- Wider on the outer edge (away from arc center), narrower on the inner edge
+- Arced outer/inner edges following the thumb arc curvature
+- Radial side edges pointing toward the arc center
+
+Three variants are available:
+
+| Keycap ID | Position | Profile | Notes |
+|-----------|----------|---------|-------|
+| `cs_t_trap_convex_t1` | T1 (innermost) | Convex dome | Inner edge aligned to C1 column; depth tapers from 1u (16mm) to 1.25u (20mm) |
+| `cs_t_trap_convex` | T2 (middle) | Convex dome | Symmetric 1.25u depth sector |
+| `cs_t_trap_thumb_l/r` | T3 (outermost) | Thumb scoop | Symmetric 1.25u depth sector, L/R mirrored |
+
+The arc geometry parameters (radius, angular spacing, gap) are configured in the file and default to Go60 measurements. Open `go60_visualization.scad` to see them in context.
+
 ### 3.2. What to print...
 
 Look at the `export_*.scad` files to see what key models were used and further comments on how to use the sets. Render them with OpenSCAD to generate STL files (STLs are not checked into git due to size).
@@ -176,7 +195,7 @@ The Go60 has 6 columns x 4 rows per half plus a 6-key thumb cluster. Print the f
 
 Plates marked "Render with CGAL" contain convex keys that require the CGAL backend (`openscad --backend=CGAL`). Other plates can use the faster Manifold backend.
 
-Open `go60_visualization.scad` in OpenSCAD to preview the full keyboard layout with all keys at their approximate positions.
+Open `go60_visualization.scad` in OpenSCAD to preview the full keyboard layout with all keys at their approximate positions. The visualization uses trapezoidal sector keycaps for the splayed thumb positions (T1, T2, T3) — see [Trapezoidal Sector Keycaps](#318-trapezoidal-sector-keycaps).
 
 ### 3.3. How to order on JLCPCB
 

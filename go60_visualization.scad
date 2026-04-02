@@ -8,6 +8,13 @@
 // the pinky column pair (C6-C5) and the index column pair (C2-C1).
 // Column stagger and thumb splay measured from reference images.
 //
+// The splayed thumb keys (T1, T2, T3) use trapezoidal sector-shaped
+// keycaps (from Choc_Chicago_Steno_Thumb_Trap.scad) that fill the
+// wedge gaps between arc-positioned keys:
+//   T1: convex dome, inner edge aligned to C1, depth tapers 1u→1.25u
+//   T2: convex dome, symmetric 1.25u sector
+//   T3: thumb scoop, symmetric 1.25u sector
+//
 // The main board shows homing bars on C2 R3. Alternate and spare keys
 // are stacked below their corresponding positions in Z.
 //
