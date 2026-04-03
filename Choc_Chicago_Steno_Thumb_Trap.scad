@@ -116,12 +116,12 @@ keyParameters = [
 
 convexDishParameters = [
 //  FFwd1  FFwd2  FPit1  FPit2  DshDep DshHDif FArcIn FArcFn FArcEx  BFwd1  BFwd2  BPit1  BPit2  BArcIn BArcFn BArcEx
-    [ 8.0,  6.0,   -3,   -45,    1.5,   3.75,  14.0,  14.5,    2,    8.0,   6.0,    -3,   -45,   14.0,  14.5,    2], // Convex dome, extended to cover all sector corners
+    [ 8.0,  6.0,   -3,   -45,    1.5,   3.75,  10.5,  13.0,    2,    7.0,   5.0,    -3,   -45,   10.5,  13.0,    2], // Convex dome, arc widens from 10.5→13 along sweep for corner coverage
 ];
 
 thumbDishParameters = [
 //  FFwd1 FFwd2 FPit1 FPit2  DshDep DshHDif FArcIn FArcFn FArcEx  BFwd1  BFwd2  BPit1  BPit2  BArcIn BArcFn BArcEx FTani FTanf BTani BTanf TanEX PhiInit PhiFin
-    [  9,  7,      0,  -40,      7,    1.7,   20,    24,     2,      9,   5.5,     5,   -50,    20,    24,     2,    5,   3.75,   2,  3.75,   2,   199,   210], // Thumb scoop, extended to cover all sector corners
+    [  9,  7,      0,  -40,      7,    1.7,   20,    24,     2,      9,   5.5,     5,   -50,    20,    24,     2,    5,   3.75,   2,  3.75,   2,   199,   210], // Thumb scoop, fully extended for skew coverage
 ];
 
 /* ── Parameter accessor functions ── */
@@ -544,7 +544,7 @@ module keycap_cs_thumb_trap(
                     fn = fn,
                     left_line = ll,
                     depth_ratio = dr,
-                    fillet = 0.5
+                    fillet = 0
                 )
             )
         ]);
