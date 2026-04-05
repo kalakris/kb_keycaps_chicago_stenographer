@@ -67,10 +67,8 @@ keyParameters = //keyParameters[KeyID][ParameterID]
     [35.20,  15.60,   5.6, 	   5.6,  4.5,   0,   .0, 0.01,    -0,    -0,   2, 2.5,   .1,      3,     .1,      3,     2,       2], //Chicago Steno R3x 2.0u
     [39.70,  15.60,   5.6, 	   5.6,  4.5,   0,   .0, 0.01,    -0,    -0,   2, 2.5,   .1,      3,     .1,      3,     2,       2], //Chicago Steno R3x 2.25u
 
-    // Extended R5 keys: tapered offset (full at bottom, 0 at top), stem stays at switch.
-    // Bottom extends to y=-57 (aligned with T1 v2 inner edge).
-    // TLDif=5 keeps top at 11mm (same as R3x 1u). Dish uses extended sweeps to cover
-    // the offset body at intermediate heights.
+    // Extended R5 keys: symmetric body centered at BodyOffsetY, stem at switch (y=0).
+    // Body+dish look symmetric from above. Stem transition bridges from stem to body.
     //                                                                                                                                     BodyOffsetY
     [17.20,  19.60,   5.6,      5,  4.4,   0,   .0, 0.01,    -0,    -0,   2, 2,    .10,      3,     .10,      3,     2,       2,  -1.80], // 7: R3x ext-A (C4/C2 R5, +3.6mm down)
     [17.20,  22.50,   5.6,      5,  4.4,   0,   .0, 0.01,    -0,    -0,   2, 2,    .10,      3,     .10,      3,     2,       2,  -3.25], // 8: R3x ext-B (C3 R5, +6.5mm down)
@@ -110,11 +108,10 @@ dishParameters = //dishParameter[keyID][ParameterID]
   [ 4.5,  3.2,   -7,     -45,    1.5,    3.75,    17.50,   17.70,  2,    4.5,  3.2,   -7,  -45,   17.50,   17.70,  2], //R3x 2.00u
   [ 4.5,  3.2,   -7,     -45,    1.5,    3.75,    19.75,   19.95,  2,    4.5,  3.2,   -7,  -45,   19.75,   19.95,  2], //R3x 2.25u
 
-  // Extended R5 keys: dish at stem center (y=0), extended sweeps cover tapered-offset body.
-  // Front: body top half-len=7.3mm at mid-height. Back: body extends to -9.6/-12.3mm.
-  // pitch=0 on first segment keeps sweep horizontal across the body extent.
-  [  6,  4,    0,     -45,    1.5,    3.75,    10.0,   10.2,    2,     9,    4,    0,  -45,   10.0,  10.2,     2], // 7: R3x ext-A (body back to -9.6 at mid)
-  [  7,  5,    0,     -45,    1.5,    3.75,    10.0,   10.2,    2,    12,    5,    0,  -45,   10.0,  10.2,     2], // 8: R3x ext-B (body back to -12.3 at mid)
+  // Extended R5 keys: symmetric body, dish centered on body (shifted by BodyOffsetY).
+  // Symmetric front/back sweeps. pitch=0 first segment for horizontal reach.
+  [  8,  4,    0,     -45,    1.5,    3.75,    10.0,   10.2,    2,     8,    4,    0,  -45,   10.0,  10.2,     2], // 7: R3x ext-A (symmetric, half-len 9.8)
+  [ 10,  5,    0,     -45,    1.5,    3.75,    10.0,   10.2,    2,    10,    5,    0,  -45,   10.0,  10.2,     2], // 8: R3x ext-B (symmetric, half-len 11.25)
 
 //  original from pseudo, mislabled/ missing params?
 //  [ 4.5,  3.2,   -5,  -45,    1.5,   3.75,  19.0,    18,     2,     4.5,  3.2,   -5,  -45,   19.0,    18,     2], //R3x 2u
@@ -161,8 +158,9 @@ function CapRound1i(keyID)   = keyParameters[keyID][14];
 function CapRound1f(keyID)   = keyParameters[keyID][15];
 function ChamExponent(keyID) = keyParameters[keyID][16];
 function StemExponent(keyID) = keyParameters[keyID][17];
-// Body offset in Y: shifts body cross-sections from full offset at bottom to 0 at top.
-// Used by extended R5 keys to extend the bottom without moving the top surface.
+// Body offset in Y: constant offset of body+dish center from stem.
+// Body and dish shift together; stem stays at switch position.
+// Stem transition tapers from y=0 (stem) to y=BodyOffsetY (inner shell).
 function BodyOffsetY(keyID) = len(keyParameters[keyID]) > 18 ? keyParameters[keyID][18] : 0;
 
 function FrontTrajectory(keyID) =
@@ -201,14 +199,14 @@ path_trans2 = [for (t=[0:step:180])   translation(oval_path(t,0,10,15,2,0))*rota
 function CapTranslation(t, keyID) =
   [
     ((1-t)/layers*TopWidShift(keyID)),   //X shift
-    ((1-t)/layers*TopLenShift(keyID)) + (layers-1-t)/(layers-1)*BodyOffsetY(keyID),   //Y shift + body offset taper (full at bottom, 0 at top)
+    ((1-t)/layers*TopLenShift(keyID)) + BodyOffsetY(keyID),   //Y shift + constant body offset
     (t/layers*KeyHeight(keyID))    //Z shift
   ];
 
 function InnerTranslation(t, keyID) =
   [
     ((1-t)/layers*TopWidShift(keyID)),   //X shift
-    ((1-t)/layers*TopLenShift(keyID)) + (layers-1-t)/(layers-1)*BodyOffsetY(keyID),   //Y shift + body offset taper
+    ((1-t)/layers*TopLenShift(keyID)) + BodyOffsetY(keyID),   //Y shift + constant body offset
     (t/layers*(KeyHeight(keyID)-topthickness))    //Z shift
   ];
 
@@ -244,7 +242,7 @@ function StemTranslation(t, keyID) =
   let(zTravel = max(KeyHeight(keyID) - topthickness - stemCrossHeight - 0.1, 0.5))
   [
     ((1-t)/stemLayers*TopWidShift(keyID)),   //X shift
-    ((1-t)/stemLayers*TopLenShift(keyID)),   //Y shift
+    ((1-t)/stemLayers*TopLenShift(keyID)) + (t/stemLayers)*BodyOffsetY(keyID),   //Y shift + taper to body offset
      stemCrossHeight+.1 + (t/stemLayers*zTravel)   //Z shift
   ];
 
@@ -321,11 +319,11 @@ module keycap_cs_convex(keyID = 0, cutLen = 0, visualizeDish = false, csrossSect
    //Dish Shape
     if(Dish == true){
      if(visualizeDish == false){
-      translate([-TopWidShift(keyID),.00001-TopLenShift(keyID),KeyHeight(keyID)-DishHeightDif(keyID)])rotate([0,-YAngleSkew(keyID),0])rotate([0,-90+XAngleSkew(keyID),90-ZAngleSkew(keyID)])skin(FrontCurve);
-      translate([-TopWidShift(keyID),-TopLenShift(keyID),KeyHeight(keyID)-DishHeightDif(keyID)])rotate([0,-YAngleSkew(keyID),0])rotate([0,-90-XAngleSkew(keyID),270-ZAngleSkew(keyID)])skin(BackCurve);
+      translate([-TopWidShift(keyID),.00001-TopLenShift(keyID)+BodyOffsetY(keyID),KeyHeight(keyID)-DishHeightDif(keyID)])rotate([0,-YAngleSkew(keyID),0])rotate([0,-90+XAngleSkew(keyID),90-ZAngleSkew(keyID)])skin(FrontCurve);
+      translate([-TopWidShift(keyID),-TopLenShift(keyID)+BodyOffsetY(keyID),KeyHeight(keyID)-DishHeightDif(keyID)])rotate([0,-YAngleSkew(keyID),0])rotate([0,-90-XAngleSkew(keyID),270-ZAngleSkew(keyID)])skin(BackCurve);
      } else {
-      #translate([-TopWidShift(keyID),.00001-TopLenShift(keyID),KeyHeight(keyID)-DishHeightDif(keyID)]) rotate([0,-YAngleSkew(keyID),0])rotate([0,-90+XAngleSkew(keyID),90-ZAngleSkew(keyID)])skin(FrontCurve);
-      #translate([-TopWidShift(keyID),-TopLenShift(keyID),KeyHeight(keyID)-DishHeightDif(keyID)])rotate([0,-YAngleSkew(keyID),0])rotate([0,-90-XAngleSkew(keyID),270-ZAngleSkew(keyID)])skin(BackCurve);
+      #translate([-TopWidShift(keyID),.00001-TopLenShift(keyID)+BodyOffsetY(keyID),KeyHeight(keyID)-DishHeightDif(keyID)]) rotate([0,-YAngleSkew(keyID),0])rotate([0,-90+XAngleSkew(keyID),90-ZAngleSkew(keyID)])skin(FrontCurve);
+      #translate([-TopWidShift(keyID),-TopLenShift(keyID)+BodyOffsetY(keyID),KeyHeight(keyID)-DishHeightDif(keyID)])rotate([0,-YAngleSkew(keyID),0])rotate([0,-90-XAngleSkew(keyID),270-ZAngleSkew(keyID)])skin(BackCurve);
      }
    }
     //  if(crossSection == true) {
