@@ -113,11 +113,88 @@ T1's depth_ratio 10/9 extends the right side to ~10mm. Required generous front s
 7. **Reference-like thumb front params**: Created bump at rear-left corner where
    skew-raised sector surface exceeded scoop depth.
 
-## Remaining Minor Issue
+## Remaining Minor Issues
 
-T1 has a tiny notch at the bottom right corner (visible when viewing from below).
-Likely from the dome sweep edge barely intersecting the sector at the extreme corner.
+T1 (v1, keyID 2) and T1 v2 (keyID 3) both have a tiny notch at the outer-right
+corner (visible from the side, at the base). Root cause: the `left_line` parameter
+creates an asymmetric sector polygon whose skin() between layers produces a small
+artifact at the right corner. Confirmed by disabling left_line → notch disappears.
+NOT a dish coverage issue (persists even with arc=20, sweep=14, pitch=0, oversize=+14).
 Considered acceptable — not visible from the top/typing perspective.
+
+## V2 Thumb Row (WIP)
+
+### Goal
+Remove T1's curvature change (arc gradient 10.5→13) by making T1 symmetric
+(BotLen=20, depth_ratio=[1,1], uniform arc). Extend straight R5 keys (C4R5,
+C3R5, C2R5) downward so their bottoms form a horizontal line at y=-57, meeting
+T1 v2's inner-left corner.
+
+### T1 v2 (keyID 3) — WORKING
+- Symmetric: BotLen=20, depth_ratio=[1,1], left_line from C1 (same as v1)
+- Uniform dish arc=14 (no gradient), pitch=0 first segment, sweep=12+6/12+5
+- Oversized body +14mm (needed for left_line corner margin)
+- Sector trim uses fn=120 for keyID 3 (didn't fix notch but smoother)
+- `Simple: yes`, `Volumes: 2` — clean except for the left_line notch
+
+### Extended R5 keys (keyIDs 7, 8) — ext_a WORKING, ext_b HAS SPIKE
+
+Uses `BodyOffsetY` in Choc_Chicago_Steno_Convex.scad to shift the body
+asymmetrically (tapered: full offset at bottom, 0 at top).
+
+**Architecture**: The body cross-sections taper from offset at the bottom to
+centered-on-stem at the top. The dish stays at the stem center (y=0). Extended
+dish sweeps (pitch=0 first segment for horizontal reach) cover the offset body.
+
+**ext_a (keyID 7)**: BotLen=19.6, TLDif=5, offset=-1.80 → **clean, no spikes**
+**ext_b (keyID 8)**: BotLen=22.5, TLDif=5, offset=-3.25 → **has spike on extended side**
+
+The ext_b spike is from the dish not reaching the offset body at intermediate
+heights. The body at mid-height extends to -12.3mm from center, but the dish
+back sweep (12mm at pitch=0) only reaches -12mm. The 0.3mm shortfall creates
+a thin spike where the body protrudes past the dish cut.
+
+### Key Learnings
+
+1. **Always use CGAL for convex key renders** — Manifold hides artifacts that
+   appear in CGAL STLs. Manifold PNGs looked clean while CGAL STLs had spikes.
+
+2. **Constant BodyOffsetY breaks CGAL booleans** — Shifting body+dish+inner
+   shell by a constant offset produced `Volumes: 4` and visible seams in CGAL
+   renders (inner shell protruding through body). Only the tapered approach
+   (full at bottom → 0 at top) produces correct `Volumes: 2`.
+
+3. **Dish sweep pitch=0 is critical** — The default -3° pitch causes the sweep
+   to descend below z=0 before reaching the body extent, creating spikes. Setting
+   pitch=0 on the first segment keeps the sweep horizontal, covering the body
+   at the switch plate level.
+
+4. **TLDif controls top surface size** — With TLDif=5 (standard), BotLen=22.5
+   gives top half-length=8.75mm which exceeds the dish sweep reach (6.8mm),
+   causing a spike on the non-extended side. This is why ext_b has a spike
+   even with pitch=0: the TOP surface is too large for the standard dish.
+
+5. **Left_line causes sector skin artifact** — The asymmetric polygon from
+   left_line creates a persistent notch at the outer-right corner of the
+   sector trim skin. No dish parameter change fixes it; only removing
+   left_line eliminates it.
+
+6. **InnerTransform/StemTransform had a bug** — Both used TopLenDiff for the
+   width dimension instead of TopWidthDiff. Fixed (minor impact on existing
+   keys: 0.6mm thicker wall at top).
+
+### Next Steps
+
+The extended keys need to look like symmetric (1+x)u convex keys from above,
+with the stem simply offset below. This means:
+- The body and dome should be fully symmetric around the body center
+- The stem connects at the switch position (off-center relative to the body)
+- Need to solve the CGAL boolean issue with constant BodyOffsetY, OR
+- Use a different approach: build the keycap as a standard larger convex key
+  centered on the body, then separately add/connect the stem at the switch pos
+
+This should also fix ext_b's spike, since a symmetric dome centered on the body
+would have standard R3x dish coverage without needing extended sweeps.
 
 ## Key Files
 
@@ -146,9 +223,22 @@ openscad --backend=CGAL --render --export-format binstl \
 
 Check for: `Simple: yes`, `Volumes: 2`, no visible holes/spikes/notches in STL viewer.
 
-Manifold backend is ~300x faster for PNG previews:
 ```bash
-openscad --backend=Manifold --render --imgsize=1200,400 \
-  --camera=0,0,2,85,0,0,30 -D 'test_keyID=0' -D 'test_dish="convex"' \
-  -o stl/debug/trap_t2_front.png test_trap.scad
+# T1 v2 (symmetric convex, uniform arc, left_line)
+openscad --backend=CGAL --render --export-format binstl \
+  -D 'test_keyID=3' -D 'test_dish="convex"' -o stl/debug/trap_t1_v2.stl test_trap.scad
+
+# Extended R5 keys (use test_ext.scad)
+openscad --backend=CGAL --render --export-format binstl \
+  -D 'test_keyID=7' -o stl/debug/r3x_ext_a.stl test_ext.scad
+openscad --backend=CGAL --render --export-format binstl \
+  -D 'test_keyID=8' -o stl/debug/r3x_ext_b.stl test_ext.scad
+```
+
+**IMPORTANT**: Always use CGAL for convex key test renders. Manifold hides
+artifacts that appear in the CGAL-exported STL. Use CGAL for PNG profiles too:
+```bash
+openscad --backend=CGAL --render --imgsize=1600,600 \
+  --camera=0,0,2,85,0,90,50 -D 'test_keyID=7' \
+  -o stl/debug/r3x_ext_a_cgal_side.png test_ext.scad
 ```

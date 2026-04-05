@@ -110,13 +110,15 @@ keyParameters = [
     [trap_center_width, 20.00,  5.6,   5,     4.4,  0,    0.0,  0.01,  0,     0,   2,  2,   .10,    3,    .10,    3,     2,     2], // 0: Convex 1.25u (T2)
     [trap_center_width, 20.00,  4.25,  3.25,  4.95, -.5,  0.0,  -3,   -3,     0,   2,  2,   .10,    2,    .10,    2,     2,     2], // 1: Thumb 1.25u (T3)
     [trap_center_width, 18.00,  5.6,   5,     4.4,  0,    0.0,  0.01,  0,     0,   2,  2,   .10,    3,    .10,    3,     2,     2], // 2: Convex tapered (T1)
+    [trap_center_width, 20.00,  5.6,   5,     4.4,  0,    0.0,  0.01,  0,     0,   2,  2,   .10,    3,    .10,    3,     2,     2], // 3: Convex symmetric (T1 v2 — uniform arc, aligned bottom)
 ];
 
 /* ── Dish parameters ── */
 
 convexDishParameters = [
 //  FFwd1  FFwd2  FPit1  FPit2  DshDep DshHDif FArcIn FArcFn FArcEx  BFwd1  BFwd2  BPit1  BPit2  BArcIn BArcFn BArcEx
-    [ 8.0,  6.0,   -3,   -45,    1.5,   3.75,  10.5,  13.0,    2,    7.0,   5.0,    -3,   -45,   10.5,  13.0,    2], // Convex dome, arc widens from 10.5→13 along sweep for corner coverage
+    [ 8.0,  6.0,   -3,   -45,    1.5,   3.75,  10.5,  13.0,    2,    7.0,   5.0,    -3,   -45,   10.5,  13.0,    2], // 0: Convex dome, arc widens from 10.5→13 along sweep for corner coverage
+    [12.0,  6.0,    0,   -45,    1.5,   3.75,  14.0,  14.0,    2,   12.0,   5.0,     0,   -45,   14.0,  14.0,    2], // 1: Uniform arc (T1 v2) — arc=14 covers left_line corner, pitch=0 stays above z=0
 ];
 
 thumbDishParameters = [
@@ -466,8 +468,10 @@ module keycap_cs_thumb_trap(
     homeDot = false,
     homeBar = false
 ) {
-    // T1 overrides (keyID 2): inner edge aligned to C1 + depth taper
-    ll = (keyID == 2) ? trap_t1_left_line : undef;
+    // T1 overrides: inner edge aligned to C1
+    // keyID 2 (T1 v1): left_line + asymmetric depth taper
+    // keyID 3 (T1 v2): left_line + symmetric depth (uniform arc, aligned bottom)
+    ll = (keyID == 2 || keyID == 3) ? trap_t1_left_line : undef;
     dr = (keyID == 2) ? trap_t1_depth_ratio : [1, 1];
 
     // ── Build body ──
@@ -482,11 +486,12 @@ module keycap_cs_thumb_trap(
             union() {
                 difference() {
                     // Outer shell: oversized smooth body so sector trim exclusively
-                    // determines edges (dish operates on smooth surface, no corner artifacts)
+                    // determines edges (dish operates on smooth surface, no corner artifacts).
+                    // +14 oversize gives ≥2mm margin beyond the T1 left_line corner at x≈-12.4.
                     skin([for (i = [0:layers-1])
                         transform(
                             translation(CapTranslation(i, keyID)) * rotation(CapRotation(i, keyID)),
-                            elliptical_rectangle(CapTransform(i, keyID) + [8, 8], b = CapRoundness(i, keyID), fn=fn)
+                            elliptical_rectangle(CapTransform(i, keyID) + [14, 14], b = CapRoundness(i, keyID), fn=fn)
                         )
                     ]);
 
@@ -534,6 +539,7 @@ module keycap_cs_thumb_trap(
         }
 
         // ── Trim to sector footprint ──
+        // keyID 3 uses higher fn to smooth skin() transitions at the left_line corner
         skin([for (i = [0:layers-1])
             transform(
                 translation(CapTranslation(i, keyID)) * rotation(CapRotation(i, keyID)),
@@ -541,7 +547,7 @@ module keycap_cs_thumb_trap(
                     a = CapTransform(i, keyID) / 2,
                     b = CapRoundness(i, keyID),
                     arc_r = trap_arc_r,
-                    fn = fn,
+                    fn = (keyID == 3) ? 120 : fn,
                     left_line = ll,
                     depth_ratio = dr,
                     fillet = 0
@@ -554,7 +560,8 @@ module keycap_cs_thumb_trap(
 /* ── Convex dish cut (two-sided, from Choc_Chicago_Steno_Convex) ── */
 
 module _cx_dish_cut(keyID) {
-    i = 0;
+    // keyID 3 (T1 v2) uses uniform arc dish params (row 1)
+    i = (keyID == 3) ? 1 : 0;
 
     FrontPath = quantize_trajectories([
         trajectory(forward = CxFrontForward1(i), pitch = CxFrontPitch1(i)),

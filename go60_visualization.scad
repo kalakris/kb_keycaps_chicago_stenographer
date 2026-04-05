@@ -35,7 +35,9 @@
 //     (1 dot + 1 spare R3) × 2 halves                    =  4
 //   Alt thumb row (below main thumbs per half):
 //     (5 R2 convex + 1 T125) × 2 halves                  = 12
-//   Total shown: 60 + 4 + 12 = 76  ✓
+//   V2 thumb row (below alt, extended + symmetric T1):
+//     6 × 2 halves                                        = 12
+//   Total shown: 60 + 4 + 12 + 12 = 88
 //
 // Open in OpenSCAD and hit F5 (preview) or F6 (render + export STL).
 
@@ -111,6 +113,19 @@ left_thumb_keys_alt = [
     "cs_r2x_1",    // T1 alt - convex
     "cs_r2x_1",    // T2 alt - convex
     "cs_t_125_l",  // T3 alt - outermost thumb 1.25u
+];
+
+// V2 thumb row: extended straight keys with aligned bottom + symmetric T1
+// The straight keys (C4/C3/C2 R5) extend downward so their bottoms form
+// a horizontal line at y=-57, meeting T1 v2's inner-left corner.
+// T1 v2 uses symmetric depth + uniform arc (no curvature change).
+left_thumb_keys_v2 = [
+    "cs_r3x_1_ext_a",         // C4 R5 v2 - extended convex (+3.6mm down)
+    "cs_r3x_1_ext_b",         // C3 R5 v2 - extended convex (+6.5mm down)
+    "cs_r3x_1_ext_a",         // C2 R5 v2 - extended convex (+3.6mm down)
+    "cs_t_trap_convex_t1_v2",  // T1 v2 - symmetric trap convex, uniform arc
+    "cs_t_trap_convex",        // T2 - trap convex (unchanged)
+    "cs_t_trap_thumb_r",       // T3 - trap thumb (unchanged)
 ];
 
 /* ── Thumb placement helper ───────────────────────────────────── */
@@ -255,6 +270,9 @@ module go60_half_board() {
 
     // Alt thumb row (stacked below)
     place_thumb_row(left_thumb_keys_alt, alt_z);
+
+    // V2 thumb row (stacked below alt)
+    place_thumb_row(left_thumb_keys_v2, 2 * alt_z);
 }
 
 /* ── C2 R3 position helper ───────────────────────────────────── */

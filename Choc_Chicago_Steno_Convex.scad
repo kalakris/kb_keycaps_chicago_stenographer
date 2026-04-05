@@ -67,6 +67,14 @@ keyParameters = //keyParameters[KeyID][ParameterID]
     [35.20,  15.60,   5.6, 	   5.6,  4.5,   0,   .0, 0.01,    -0,    -0,   2, 2.5,   .1,      3,     .1,      3,     2,       2], //Chicago Steno R3x 2.0u
     [39.70,  15.60,   5.6, 	   5.6,  4.5,   0,   .0, 0.01,    -0,    -0,   2, 2.5,   .1,      3,     .1,      3,     2,       2], //Chicago Steno R3x 2.25u
 
+    // Extended R5 keys: tapered offset (full at bottom, 0 at top), stem stays at switch.
+    // Bottom extends to y=-57 (aligned with T1 v2 inner edge).
+    // TLDif=5 keeps top at 11mm (same as R3x 1u). Dish uses extended sweeps to cover
+    // the offset body at intermediate heights.
+    //                                                                                                                                     BodyOffsetY
+    [17.20,  19.60,   5.6,      5,  4.4,   0,   .0, 0.01,    -0,    -0,   2, 2,    .10,      3,     .10,      3,     2,       2,  -1.80], // 7: R3x ext-A (C4/C2 R5, +3.6mm down)
+    [17.20,  22.50,   5.6,      5,  4.4,   0,   .0, 0.01,    -0,    -0,   2, 2,    .10,      3,     .10,      3,     2,       2,  -3.25], // 8: R3x ext-B (C3 R5, +6.5mm down)
+
 //  original from pseudo, mislabled/ missing params?
 //    [35.85,  15.65,     7, 	   7,  4.4,    0,   .0,     0,    -0,    -0,   2, 2,    .30,      5,     .30,      5,     2,       2], //Chicago Steno R3x 2u
 //    [35.85,  15.65,     7, 	   7,  4.4,    0,   .0,     0,    -0,    -0,   2, 2,    .30,      5,     .30,      5,     2,       2], //Chicago Steno R3x 2u
@@ -101,6 +109,12 @@ dishParameters = //dishParameter[keyID][ParameterID]
   [ 4.5,  3.2,   -7,     -45,    1.5,    3.75,    15.25,   15.45,  2,    4.5,  3.2,   -7,  -45,   15.25,   15.45,  2], //R3x 1.75u
   [ 4.5,  3.2,   -7,     -45,    1.5,    3.75,    17.50,   17.70,  2,    4.5,  3.2,   -7,  -45,   17.50,   17.70,  2], //R3x 2.00u
   [ 4.5,  3.2,   -7,     -45,    1.5,    3.75,    19.75,   19.95,  2,    4.5,  3.2,   -7,  -45,   19.75,   19.95,  2], //R3x 2.25u
+
+  // Extended R5 keys: dish at stem center (y=0), extended sweeps cover tapered-offset body.
+  // Front: body top half-len=7.3mm at mid-height. Back: body extends to -9.6/-12.3mm.
+  // pitch=0 on first segment keeps sweep horizontal across the body extent.
+  [  6,  4,    0,     -45,    1.5,    3.75,    10.0,   10.2,    2,     9,    4,    0,  -45,   10.0,  10.2,     2], // 7: R3x ext-A (body back to -9.6 at mid)
+  [  7,  5,    0,     -45,    1.5,    3.75,    10.0,   10.2,    2,    12,    5,    0,  -45,   10.0,  10.2,     2], // 8: R3x ext-B (body back to -12.3 at mid)
 
 //  original from pseudo, mislabled/ missing params?
 //  [ 4.5,  3.2,   -5,  -45,    1.5,   3.75,  19.0,    18,     2,     4.5,  3.2,   -5,  -45,   19.0,    18,     2], //R3x 2u
@@ -147,6 +161,9 @@ function CapRound1i(keyID)   = keyParameters[keyID][14];
 function CapRound1f(keyID)   = keyParameters[keyID][15];
 function ChamExponent(keyID) = keyParameters[keyID][16];
 function StemExponent(keyID) = keyParameters[keyID][17];
+// Body offset in Y: shifts body cross-sections from full offset at bottom to 0 at top.
+// Used by extended R5 keys to extend the bottom without moving the top surface.
+function BodyOffsetY(keyID) = len(keyParameters[keyID]) > 18 ? keyParameters[keyID][18] : 0;
 
 function FrontTrajectory(keyID) =
   [
@@ -184,14 +201,14 @@ path_trans2 = [for (t=[0:step:180])   translation(oval_path(t,0,10,15,2,0))*rota
 function CapTranslation(t, keyID) =
   [
     ((1-t)/layers*TopWidShift(keyID)),   //X shift
-    ((1-t)/layers*TopLenShift(keyID)),   //Y shift
+    ((1-t)/layers*TopLenShift(keyID)) + (layers-1-t)/(layers-1)*BodyOffsetY(keyID),   //Y shift + body offset taper (full at bottom, 0 at top)
     (t/layers*KeyHeight(keyID))    //Z shift
   ];
 
 function InnerTranslation(t, keyID) =
   [
     ((1-t)/layers*TopWidShift(keyID)),   //X shift
-    ((1-t)/layers*TopLenShift(keyID)),   //Y shift
+    ((1-t)/layers*TopLenShift(keyID)) + (layers-1-t)/(layers-1)*BodyOffsetY(keyID),   //Y shift + body offset taper
     (t/layers*(KeyHeight(keyID)-topthickness))    //Z shift
   ];
 
@@ -217,7 +234,7 @@ function CapRadius(t, keyID) = pow(t/layers, ChamExponent(keyID))*ChamfFinRad(ke
 
 function InnerTransform(t, keyID) =
   [
-    pow(t/layers, WidExponent(keyID))*(BottomWidth(keyID) -TopLenDiff(keyID)-wallthickness*2) + (1-pow(t/layers, WidExponent(keyID)))*(BottomWidth(keyID) -wallthickness*2),
+    pow(t/layers, WidExponent(keyID))*(BottomWidth(keyID) -TopWidthDiff(keyID)-wallthickness*2) + (1-pow(t/layers, WidExponent(keyID)))*(BottomWidth(keyID) -wallthickness*2),
     pow(t/layers, LenExponent(keyID))*(BottomLength(keyID)-TopLenDiff(keyID)-wallthickness*2) + (1-pow(t/layers, LenExponent(keyID)))*(BottomLength(keyID)-wallthickness*2)
   ];
 
@@ -242,7 +259,7 @@ function StemTransform(t, keyID) =
   // Clamp t/stemLayers to 1.0 so profile never exceeds body size when stemLayerAddition extends the range
   let(s = min(t/stemLayers, 1))
   [
-    pow(s, StemExponent(keyID))*(BottomWidth(keyID) -TopLenDiff(keyID)-wallthickness) + (1-pow(s, StemExponent(keyID)))*(stemWid - 2*slop),
+    pow(s, StemExponent(keyID))*(BottomWidth(keyID) -TopWidthDiff(keyID)-wallthickness) + (1-pow(s, StemExponent(keyID)))*(stemWid - 2*slop),
     pow(s, StemExponent(keyID))*(BottomLength(keyID)-TopLenDiff(keyID)-wallthickness) + (1-pow(s, StemExponent(keyID)))*(stemLen - 2*slop)
   ];
 

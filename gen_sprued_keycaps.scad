@@ -84,6 +84,13 @@ available_keycaps = [
     ["cs_t_trap_thumb_l",   4,  1, 1.00,   0,  0, false, false, false],
     ["cs_t_trap_thumb_r",   4,  1, 1.00,   0,  0, true,  false, false],
 
+    // V2 thumb row: T1 symmetric + extended straight R5 keys
+    // T1 v2: symmetric depth, uniform arc (no curvature change), C1-aligned left edge
+    ["cs_t_trap_convex_t1_v2", 4, 3, 1.00,  0,  0, false, false, false],
+    // Extended R5 keys: bottom extends to y=-57 (aligned with T1 v2 inner edge)
+    ["cs_r3x_1_ext_a",     2,  7, 1.00,   0,  0, false, false, false],  // C4/C2 R5 (+3.6mm)
+    ["cs_r3x_1_ext_b",     2,  8, 1.00,   0,  0, false, false, false],  // C3 R5 (+6.5mm)
+
     // Stem rotated thumbs for boards where the inner thumb switch is not
     // rotated
     ["cs_t_stem_rot_15_l",  3,  3, 1.00,   0,  0, false, false, false],
@@ -196,7 +203,7 @@ module cs_default(keyID, variation=1, stem_rot=0, dot=false, bar=false) {
     } else if(variation == 4) {
         keycap_cs_thumb_trap(
             keyID    = keyID,
-            dishType = (keyID == 0 || keyID == 2) ? "convex" : "thumb",
+            dishType = (keyID == 0 || keyID == 2 || keyID == 3) ? "convex" : "thumb",
             Stem     = true,
             StemRot  = stem_rot,
             Dish     = true,
