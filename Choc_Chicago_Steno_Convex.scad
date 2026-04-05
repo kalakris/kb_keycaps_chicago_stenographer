@@ -109,9 +109,9 @@ dishParameters = //dishParameter[keyID][ParameterID]
   [ 4.5,  3.2,   -7,     -45,    1.5,    3.75,    19.75,   19.95,  2,    4.5,  3.2,   -7,  -45,   19.75,   19.95,  2], //R3x 2.25u
 
   // Extended R5 keys: symmetric body, dish centered on body (shifted by BodyOffsetY).
-  // Symmetric front/back sweeps. pitch=0 first segment for horizontal reach.
-  [  8,  4,    0,     -45,    1.5,    3.75,    10.0,   10.2,    2,     8,    4,    0,  -45,   10.0,  10.2,     2], // 7: R3x ext-A (symmetric, half-len 9.8)
-  [ 10,  5,    0,     -45,    1.5,    3.75,    10.0,   10.2,    2,    10,    5,    0,  -45,   10.0,  10.2,     2], // 8: R3x ext-B (symmetric, half-len 11.25)
+  // Symmetric front/back sweeps. pitch=-3 (like R3x 1u) for smooth dome curvature.
+  [  8,  4,   -3,     -45,    1.5,    3.75,     8.5,    8.7,    2,     8,    4,   -3,  -45,    8.5,    8.7,    2], // 7: R3x ext-A (symmetric, half-len 9.8)
+  [ 10,  5,   -3,     -45,    1.5,    3.75,     8.5,    8.7,    2,    10,    5,   -3,  -45,    8.5,    8.7,    2], // 8: R3x ext-B (symmetric, half-len 11.25)
 
 //  original from pseudo, mislabled/ missing params?
 //  [ 4.5,  3.2,   -5,  -45,    1.5,   3.75,  19.0,    18,     2,     4.5,  3.2,   -5,  -45,   19.0,    18,     2], //R3x 2u
