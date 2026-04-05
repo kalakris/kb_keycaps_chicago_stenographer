@@ -115,17 +115,16 @@ left_thumb_keys_alt = [
     "cs_t_125_l",  // T3 alt - outermost thumb 1.25u
 ];
 
-// V2 thumb row: extended straight keys with aligned bottom + symmetric T1
+// V2 thumb row: extended straight keys with aligned bottom
 // The straight keys (C4/C3/C2 R5) extend downward so their bottoms form
-// a horizontal line at y=-57, meeting T1 v2's inner-left corner.
-// T1 v2 uses symmetric depth + uniform arc (no curvature change).
+// a horizontal line at y=-57, meeting T1's inner-left corner.
 left_thumb_keys_v2 = [
-    "cs_r3x_1_ext_a",         // C4 R5 v2 - extended convex (+3.6mm down)
-    "cs_r3x_1_ext_b",         // C3 R5 v2 - extended convex (+6.5mm down)
-    "cs_r3x_1_ext_a",         // C2 R5 v2 - extended convex (+3.6mm down)
-    "cs_t_trap_convex_t1_v2",  // T1 v2 - symmetric trap convex, uniform arc
-    "cs_t_trap_convex",        // T2 - trap convex (unchanged)
-    "cs_t_trap_thumb_r",       // T3 - trap thumb (unchanged)
+    "cs_r3x_1_ext_a",         // C4 R5 - extended convex (+3.6mm down)
+    "cs_r3x_1_ext_b",         // C3 R5 - extended convex (+6.5mm down)
+    "cs_r3x_1_ext_a",         // C2 R5 - extended convex (+3.6mm down)
+    "cs_t_trap_convex_t1",     // T1 - trap convex, C1-aligned left edge
+    "cs_t_trap_convex",        // T2 - trap convex
+    "cs_t_trap_thumb_r",       // T3 - trap thumb
 ];
 
 /* ── Thumb placement helper ───────────────────────────────────── */

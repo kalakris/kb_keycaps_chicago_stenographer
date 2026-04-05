@@ -22,7 +22,7 @@ use <skin.scad>
 //
 // keyID 0: Convex symmetric sector (T2)
 // keyID 1: Thumb symmetric sector (T3)
-// keyID 2: Convex with inner edge aligned to C1 column (T1)
+// keyID 2: Convex sector with inner edge aligned to C1 column (T1)
 
 // Preview: render T1 keycap (convex, inner edge aligned to C1)
 keycap_cs_thumb_trap(
@@ -74,10 +74,7 @@ trap_c1_left_x = 92.5 - 17.2/2;  // = 83.9
 trap_t1_dx = trap_c1_left_x - trap_t1_x;
 trap_t1_left_line = [trap_t1_dx / cos(trap_t1_rot), tan(trap_t1_rot)];
 
-// T1 depth taper: 16mm (1u) on left, 20mm (1.25u) on right.
-// BotLen for T1 = 18mm (average). Depth ratios scale the half-depth
-// at each side relative to the center hd.
-trap_t1_depth_ratio = [8/9, 10/9];  // [left, right]
+// T1 depth is symmetric (BotLen=20, depth_ratio=[1,1]).
 
 /* ── Resolution ── */
 
@@ -103,22 +100,21 @@ stemLayers      = 50;
 //
 // keyID 0: Convex R3x, 1.25u depth (for T2) — flat dome top
 // keyID 1: Thumb, 1.25u depth (for T3) — concave scoop
-// keyID 2: Convex R3x, tapered depth 16→20mm (for T1) — inner edge aligned to C1
+// keyID 2: Convex R3x, 1.25u depth (for T1) — inner edge aligned to C1
 
 keyParameters = [
 //  BotWid              BotLen  TWDif  TLDif  keyh  WSft  LSft  XSkew  YSkew ZSkew WEx LEx  CapR0i CapR0f CapR1i CapR1f CapREx StemEx
     [trap_center_width, 20.00,  5.6,   5,     4.4,  0,    0.0,  0.01,  0,     0,   2,  2,   .10,    3,    .10,    3,     2,     2], // 0: Convex 1.25u (T2)
     [trap_center_width, 20.00,  4.25,  3.25,  4.95, -.5,  0.0,  -3,   -3,     0,   2,  2,   .10,    2,    .10,    2,     2,     2], // 1: Thumb 1.25u (T3)
-    [trap_center_width, 18.00,  5.6,   5,     4.4,  0,    0.0,  0.01,  0,     0,   2,  2,   .10,    3,    .10,    3,     2,     2], // 2: Convex tapered (T1)
-    [trap_center_width, 20.00,  5.6,   5,     4.4,  0,    0.0,  0.01,  0,     0,   2,  2,   .10,    3,    .10,    3,     2,     2], // 3: Convex symmetric (T1 v2 — uniform arc, aligned bottom)
+    [trap_center_width, 20.00,  5.6,   5,     4.4,  0,    0.0,  0.01,  0,     0,   2,  2,   .10,    3,    .10,    3,     2,     2], // 2: Convex 1.25u (T1) — left_line aligned to C1
 ];
 
 /* ── Dish parameters ── */
 
 convexDishParameters = [
 //  FFwd1  FFwd2  FPit1  FPit2  DshDep DshHDif FArcIn FArcFn FArcEx  BFwd1  BFwd2  BPit1  BPit2  BArcIn BArcFn BArcEx
-    [ 8.0,  6.0,   -3,   -45,    1.5,   3.75,  10.5,  13.0,    2,    7.0,   5.0,    -3,   -45,   10.5,  13.0,    2], // 0: Convex dome, arc widens from 10.5→13 along sweep for corner coverage
-    [12.0,  6.0,    0,   -45,    1.5,   3.75,  14.0,  14.0,    2,   12.0,   5.0,     0,   -45,   14.0,  14.0,    2], // 1: Uniform arc (T1 v2) — arc=14 covers left_line corner, pitch=0 stays above z=0
+    [ 8.0,  6.0,   -3,   -45,    1.5,   3.75,  10.5,  13.0,    2,    7.0,   5.0,    -3,   -45,   10.5,  13.0,    2], // 0: T2 — arc gradient 10.5→13 for sector corner coverage
+    [ 8.0,  6.0,   -3,   -45,    1.5,   3.75,  13.0,  13.2,    2,    7.0,   5.0,    -3,   -45,   13.0,  13.2,    2], // 1: T1 — uniform arc=13 covers left_line corner (x≈-12.4), pitch=-3 for dome
 ];
 
 thumbDishParameters = [
@@ -468,11 +464,9 @@ module keycap_cs_thumb_trap(
     homeDot = false,
     homeBar = false
 ) {
-    // T1 overrides: inner edge aligned to C1
-    // keyID 2 (T1 v1): left_line + asymmetric depth taper
-    // keyID 3 (T1 v2): left_line + symmetric depth (uniform arc, aligned bottom)
-    ll = (keyID == 2 || keyID == 3) ? trap_t1_left_line : undef;
-    dr = (keyID == 2) ? trap_t1_depth_ratio : [1, 1];
+    // T1 (keyID 2): inner edge aligned to C1 via left_line
+    ll = (keyID == 2) ? trap_t1_left_line : undef;
+    dr = [1, 1];
 
     // ── Build body ──
     // Strategy: build a smooth elliptical_rectangle keycap, apply dish
@@ -539,7 +533,7 @@ module keycap_cs_thumb_trap(
         }
 
         // ── Trim to sector footprint ──
-        // keyID 3 uses higher fn to smooth skin() transitions at the left_line corner
+        // T1 (keyID 2) uses higher fn to smooth skin() transitions at the left_line corner
         skin([for (i = [0:layers-1])
             transform(
                 translation(CapTranslation(i, keyID)) * rotation(CapRotation(i, keyID)),
@@ -547,7 +541,7 @@ module keycap_cs_thumb_trap(
                     a = CapTransform(i, keyID) / 2,
                     b = CapRoundness(i, keyID),
                     arc_r = trap_arc_r,
-                    fn = (keyID == 3) ? 120 : fn,
+                    fn = (keyID == 2) ? 120 : fn,
                     left_line = ll,
                     depth_ratio = dr,
                     fillet = 0
@@ -560,8 +554,8 @@ module keycap_cs_thumb_trap(
 /* ── Convex dish cut (two-sided, from Choc_Chicago_Steno_Convex) ── */
 
 module _cx_dish_cut(keyID) {
-    // keyID 3 (T1 v2) uses uniform arc dish params (row 1)
-    i = (keyID == 3) ? 1 : 0;
+    // T1 (keyID 2) uses its own dish params (row 1)
+    i = (keyID == 2) ? 1 : 0;
 
     FrontPath = quantize_trajectories([
         trajectory(forward = CxFrontForward1(i), pitch = CxFrontPitch1(i)),
