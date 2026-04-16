@@ -20,6 +20,7 @@ If you like these keycaps after trying the 3D printed version, [consider buying 
     - [3.1.6. Convex Keycaps](#316-convex-keycaps)
     - [3.1.7. Lateral Keycaps](#317-lateral-keycaps)
     - [3.1.8. Trapezoidal Sector Keycaps](#318-trapezoidal-sector-keycaps)
+    - [3.1.9. Extended R5 Keys](#319-extended-r5-keys)
   - [3.2. What to print...](#32-what-to-print)
     - [3.2.1. If you have a 5x3 row board (Such as the corne without the outer coulmn)](#321-if-you-have-a-5x3-row-board-such-as-the-corne-without-the-outer-coulmn)
     - [3.2.2. If you have a 6x3 row board (Such as the corne WITH the outer coulmn)](#322-if-you-have-a-6x3-row-board-such-as-the-corne-with-the-outer-coulmn)
@@ -136,11 +137,24 @@ Three variants are available:
 
 | Keycap ID | Position | Profile | Notes |
 |-----------|----------|---------|-------|
-| `cs_t_trap_convex_t1` | T1 (innermost) | Convex dome | Inner edge aligned to C1 column; depth tapers from 1u (16mm) to 1.25u (20mm) |
+| `cs_t_trap_convex_t1` | T1 (innermost) | Convex dome | Symmetric 1.25u depth sector; inner edge aligned to C1 column above |
 | `cs_t_trap_convex` | T2 (middle) | Convex dome | Symmetric 1.25u depth sector |
 | `cs_t_trap_thumb_l/r` | T3 (outermost) | Thumb scoop | Symmetric 1.25u depth sector, L/R mirrored |
 
 The arc geometry parameters (radius, angular spacing, gap) are configured in the file and default to Go60 measurements. Open `go60_visualization.scad` to see them in context.
+
+#### 3.1.9. Extended R5 Keys
+
+For boards where the splayed thumb row meets a row of straight-shifted keys, the extended R5 keys (`cs_r3x_1_ext_a`, `cs_r3x_1_ext_b` in `Choc_Chicago_Steno_Convex.scad`) extend the body downward so the bottom edge aligns with T1's inner edge:
+
+| Keycap ID | Extension | Used for |
+|-----------|-----------|----------|
+| `cs_r3x_1_ext_a` | +3.6mm | C4 R5 and C2 R5 columns |
+| `cs_r3x_1_ext_b` | +6.5mm | C3 R5 column |
+
+The body is symmetric (centered at `BodyOffsetY`) and the stem is offset to align with the switch position. From above, these look like standard symmetric convex keys; from the bottom, the stem is visibly off-center.
+
+These are used in the V2 thumb row layout (`left_thumb_keys_v2` in `go60_visualization.scad`).
 
 ### 3.2. What to print...
 
