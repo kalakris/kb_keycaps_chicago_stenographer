@@ -195,17 +195,20 @@ All of the above, PLUS...
 
 #### 3.2.4. If you have a MoErgo Go60 (6x4 split columnar)
 
-The Go60 has 6 columns x 4 rows per half plus a 6-key thumb cluster. Print the following:
+The Go60 has 6 columns x 4 rows per half plus a 6-key thumb cluster. C1, C2 (inner index pair) and C5, C6 (outer pinky pair) can each be printed in two styles — **lateral** (smooth side, easier to slide between adjacent columns) or **non-lateral** (ridged, like the rest of the steno set). Print one or both styles depending on preference; the table below covers both.
 
 | File | Keys | Qty | Subtotal | Notes |
 |------|------|-----|----------|-------|
-| `export_go60_regular_columns.scad` | 10 | 2 | 20 | C3+C4 (ring/middle) R1-R4 + 2 spare convex thumbs. Render with CGAL. |
-| `export_go60_lateral_columns.scad` | 10 | 2 | 20 | C6+C5 (outer pinky pair) lateral R1-R4 + 2 spare ridged thumbs |
-| `export_go60_inner_columns_left.scad` | 10 | 1 | 10 | Left C2+C1 lateral R1-R4 + homing bar + homing dot |
-| `export_go60_inner_columns_right.scad` | 10 | 1 | 10 | Right C2+C1 lateral R1-R4 + homing bar + homing dot |
+| `export_go60_regular_columns.scad` | 10 | 4 | 40 | C3+C4 (×2 halves) + non-lateral C5+C6 (×2 halves). R1-R4 ridged + 2 spare convex thumbs. Render with CGAL. |
+| `export_go60_regular_columns_homing.scad` | 10 | 2 | 20 | Non-lateral C1+C2 (×2 halves). R1-R4 ridged + homing bar + homing dot for C2 R3. |
+| `export_go60_lateral_columns.scad` | 10 | 2 | 20 | Lateral C5+C6 (×2 halves). Lateral R1-R4 + 2 spare ridged thumbs. |
+| `export_go60_inner_columns_left.scad` | 10 | 1 | 10 | Lateral C2+C1 left half. Lateral R1-R4 + homing bar + homing dot. |
+| `export_go60_inner_columns_right.scad` | 10 | 1 | 10 | Lateral C2+C1 right half. Lateral R1-R4 + homing bar + homing dot. |
 | `export_go60_thumbs.scad` | 10 | 1 | 10 | Main thumb cluster: ridged + convex + spare convex. Render with CGAL. |
 | `export_go60_thumbs_alt.scad` | 10 | 1 | 10 | Alt thumb cluster: 8 convex R2 + 2 thumb 1.25u. Render with CGAL. |
-| **Total** | | | **80** | |
+| **Total (both styles)** | | | **120** | |
+
+If you only want one style, drop the corresponding plates: skip the lateral plates (`lateral_columns`, `inner_columns_left`, `inner_columns_right`) for non-lateral only, or skip 4 of the 6 non-lateral plates (keep `regular_columns` ×2 for C3+C4) for lateral only.
 
 Plates marked "Render with CGAL" contain convex keys that require the CGAL backend (`openscad --backend=CGAL`). Other plates can use the faster Manifold backend.
 
