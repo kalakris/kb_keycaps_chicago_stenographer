@@ -118,10 +118,20 @@ left_thumb_keys_alt = [
 // V2 thumb row: extended straight keys with aligned bottom
 // The straight keys (C4/C3/C2 R5) extend downward so their bottoms form
 // a horizontal line at y=-57, meeting T1's inner-left corner.
+//
+// TODO: C2 R5 should be a thumb dish here, not a convex dome.  v1
+// (left_thumb_keys) deliberately puts cs_t_1_l there: the thumb rests on
+// T1 and reaches C2 R5, but C3/C4 R5 are finger keys.  It is convex in v2
+// only because the BodyOffsetY extension machinery lives in
+// Choc_Chicago_Steno_Convex.scad and no extended thumb variant exists —
+// so all three straight keys collapsed onto the one extended shape
+// available.  Fixing it means porting BodyOffsetY into the thumb file;
+// expect the 7mm scoop to spike where the dish fails to cover the offset
+// at intermediate heights (cf. the ext_b spike).
 left_thumb_keys_v2 = [
     "cs_r3x_1_ext_a",         // C4 R5 - extended convex (+3.6mm down)
     "cs_r3x_1_ext_b",         // C3 R5 - extended convex (+6.5mm down)
-    "cs_r3x_1_ext_a",         // C2 R5 - extended convex (+3.6mm down)
+    "cs_r3x_1_ext_a",         // C2 R5 - extended convex (+3.6mm down) — TODO: should be dished
     "cs_t_trap_convex_t1",     // T1 - trap convex, C1-aligned left edge
     "cs_t_trap_convex",        // T2 - trap convex
     "cs_t_trap_thumb_r",       // T3 - trap thumb

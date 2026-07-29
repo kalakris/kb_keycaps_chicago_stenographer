@@ -156,6 +156,14 @@ The body is symmetric (centered at `BodyOffsetY`) and the stem is offset to alig
 
 These are used in the V2 thumb row layout (`left_thumb_keys_v2` in `go60_visualization.scad`).
 
+> **Known gap:** all three extended keys are convex, so V2 puts a dome on C2 R5.
+> V1 (`left_thumb_keys`) deliberately uses a thumb dish (`cs_t_1_l`) there, since
+> the thumb rests on T1 and reaches C2 R5 while C3/C4 R5 are finger keys. C2 R5 is
+> convex in V2 only because `BodyOffsetY` lives in `Choc_Chicago_Steno_Convex.scad`
+> and no extended thumb variant exists yet. Fixing it means porting `BodyOffsetY`
+> into the thumb file, where the 7mm scoop is likely to spike the same way `ext_b`
+> did.
+
 ### 3.2. What to print...
 
 Look at the `export_*.scad` files to see what key models were used and further comments on how to use the sets. Render them with OpenSCAD to generate STL files (STLs are not checked into git due to size).
